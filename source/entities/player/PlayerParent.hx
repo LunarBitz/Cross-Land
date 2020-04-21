@@ -34,7 +34,7 @@ class Player extends FlxSprite
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
-	public static var TERMINAL_VELOCITY(default, never):Float = 1500;
+	public var TERMINAL_VELOCITY(default, never):Float = 1500;
 
 	public var xSpeed:Float = 0;
 	public var ySpeed:Float = 0;
@@ -71,12 +71,12 @@ class Player extends FlxSprite
 		offset.set(6, 0);
 		centerOrigin(); 
 
+		gatherAnimations();
+
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
 
-		animation.add("idle", [0], 45, false);
-		animation.add("crouching", [1, 2, 3, 4, 5, 6], 45, false);
-		animation.add("uncrouching", [6, 5, 4, 3, 2, 1], 45, false);
+		
 		
 	}
 
@@ -90,7 +90,7 @@ class Player extends FlxSprite
 		if (facingDirection != 0)
 			facing = (facingDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
 
-		handleStates();
+		callStates();
 
 		super.update(elapsed);
 	}
@@ -109,11 +109,18 @@ class Player extends FlxSprite
 		playerInput.bindAxis("horizontalAxis", "left", "right");
 	}
 
+	private function gatherAnimations():Void 
+	{
+		animation.add("idle", [0], 45, false);
+		animation.add("crouching", [1, 2, 3, 4, 5, 6], 45, false);
+		animation.add("uncrouching", [6, 5, 4, 3, 2, 1], 45, false);
+	}
+
 	/**
 		Function to handle what happens with each action state.
 		See `HeroStates.hx`
 	**/
-	public function handleStates():Void
+	public function callStates():Void
 	{
 		switch (playerState.getState())
 		{

@@ -6,6 +6,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import entities.player.PlayerParent;
+import entities.player.characters.Kholu;
 import entities.launchers.Cannon;
 import entities.collectables.Coin;
 import entities.terrain.Wall;
@@ -16,7 +17,7 @@ import systems.Hud;
 
 class PlayState extends FlxState
 {
-	private var player:Player;
+	private var player:Kholu;
 	private var hud:GameHUD;
 	private var money:Int = 0;
 
@@ -28,7 +29,7 @@ class PlayState extends FlxState
 
 	override public function create():Void
 	{
-		player = new Player();
+		player = new Kholu();
 		add(player);
 
 		FlxG.camera.follow(player, PLATFORMER, 1/16);

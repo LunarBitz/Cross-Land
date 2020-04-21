@@ -18,7 +18,18 @@ class AnimationSystem
 	public function hasChanged():Bool
 	{
 		return !(previousAnimation == currentAnimation);
-	}
+    }
+    
+    public function createAnimation(name:String, frames:Array<Int>, frameRate:Int, loop:Bool) 
+    {
+        owner.animation.add(name, frames, frameRate, loop);
+        
+    }
+
+    public function createAnimationChain(chainName:String, animations:Array<String>, frameRate:Int, loop:Bool) 
+    {
+        owner.animation.addByStringIndices(chainName, "", animations, "", frameRate, loop);
+    }
 
 	public function setAnimation(newAnimation:String, forcePlay:Bool = false, playReversed:Bool = false, startingFrame:Int = 0, holdOnLastFrame = false):String
 	{
