@@ -1,0 +1,233 @@
+{
+  "name": "Assignment3",
+  "ogmoVersion": "3.3.0",
+  "levelPaths": ["."],
+  "backgroundColor": "#282c34ff",
+  "gridColor": "#3c4049cc",
+  "anglesRadians": true,
+  "directoryDepth": 5,
+  "layerGridDefaultSize": {"x": 8, "y": 8},
+  "levelDefaultSize": {"x": 320, "y": 240},
+  "levelMinSize": {"x": 128, "y": 128},
+  "levelMaxSize": {"x": 4096, "y": 4096},
+  "levelValues": [],
+  "defaultExportMode": ".json",
+  "compactExport": false,
+  "externalScript": "",
+  "playCommand": "",
+  "entityTags": [],
+  "layers": [
+    {
+      "definition": "entity",
+      "name": "entities",
+      "gridSize": {"x": 8, "y": 8},
+      "exportID": "95232133",
+      "requiredTags": [],
+      "excludedTags": []
+    },
+    {
+      "definition": "tile",
+      "name": "graphics",
+      "gridSize": {"x": 48, "y": 48},
+      "exportID": "95249136",
+      "exportMode": 0,
+      "arrayMode": 0,
+      "defaultTileset": "tiles"
+    },
+    {
+      "definition": "grid",
+      "name": "solid",
+      "gridSize": {"x": 48, "y": 48},
+      "exportID": "95387414",
+      "arrayMode": 0,
+      "legend": {"0": "#00000000", "1": "#000000ff", "w": "#8d3d86ff"}
+    }
+  ],
+  "entities": [
+    {
+      "exportID": "95239089",
+      "name": "player",
+      "limit": 1,
+      "size": {"x": 32, "y": 32},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#34ff00ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 32, "y": 32},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": []
+    },
+    {
+      "exportID": "95302020",
+      "name": "cannon",
+      "limit": -1,
+      "size": {"x": 32, "y": 32},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": [
+        {"name": "facing_direction", "definition": "Integer", "defaults": 4, "bounded": true, "min": 2, "max": 8}
+      ]
+    },
+    {
+      "exportID": "95323035",
+      "name": "coin",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ffbf00ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": []
+    },
+    {
+      "exportID": "95340101",
+      "name": "treasure",
+      "limit": -1,
+      "size": {"x": 32, "y": 32},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#8d00ffff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": []
+    },
+    {
+      "exportID": "95353066",
+      "name": "levelComplete",
+      "limit": -1,
+      "size": {"x": 32, "y": 32},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ffffffff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": []
+    }
+  ],
+  "tilesets": [
+    {"label": "tiles", "path": "../images/graphics.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAAAwCAYAAAAvvfcmAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAEL0lEQVR4nO3cMWvbQBgG4DdNVYM9GEIWG2coEYbi4MV/wFOhU7qlvyD/KUP3GrJk6tq5RktIKBh5irEWE8gggxEhHZJzJPksW7bku5PfB0LskxK+IW/u9OnkAxju6urqRXUNRKp8UF3AthzHUV3CVli/WqbX/1F1AVlwHAe1Wk11GanU6/X5a9a/e0Wp3/gZmGifMcBEBivEEjrO8zzVJUitu0xj/fkoYv2FDDAAlMtl1SVETKfTVOez/mwVtX4uoYkMxgATJZhOpwiCQIsxmcIuoYmyIFtKqxqTYYCJJNaZ/XTAABNJMMBEBjOlC80Ak1LhP0zdQmMCBpiUCAfXsiwEQTAfY5DXxwCTMpZlLbwWQV4WYtlScp8DzwAbrNMoAQCc0UxxJekk7YoSs3HSz4WDvyrwm2ITi3Ilwht+bVqQZdKEV7zPI8QMMOUmHN7n2x4A4PrxbOE827Yj5+oS8HK5HNlpFF4+i+My8fCGx7MOsW7LcnahCyIe3nv3AQAwmHxCt9uF7/vo9/vzc6y/v9GyT3DYvkCnUdIqxMDilsFNg5O09C4yBthQIrw3k9Ol5wwGAwxwCmCIFnrahRhYL7BpniTKYykdBEHkd6oak2GADbROeMNez3sPsYmWLZ/j52Q9C1uWJb3uVjEmwwAbxhnN4D6eoX72FV3J8Uqlgm5XcuRumHNl+Uj7HG9WTFmOM8CGcV0X1WoVvu8vHKtUKtJxAPA//wDcX2i3od0yepllneddYIApc51GCa6LSJMqTMy8y46fH79+1zm88Rk3TXizDB270JSpcPd5U/+OviEwILybzLirbkEVFQNsABHe59sevjw+vHWWiyUpvPH7xfFxYd/CCzDAxmnZJwCGa3eghWazCdu28ylqS+uEd9n4PoY2jAE2yGH7Yr7z6vw42lVOG2jdrJpd4/ufgXzDyyYWZcYZzSLXwK+z8Lt792HewJLdRhqPx9rOvuuQzcx5z7wMMGVKhFhsxBAzsdhK6ft+4m0kU62amfOi29KcXegCiM/Ews3kFJj0pbeRdL72TZJ0PaxbuFTi50IbRtzDjW+JPD8eonr3E09PT2g2m/MvU8K7amZVFV5+LjTlTjS0WvYJ2u3WRhs1XNcFACWBjz9eCOy+aZVUmy5jMgywgcLXwy305uOH7YvU4e00Suj9ucdgMIiM7zrI4T9Y2eyz6/CyiUU7EV5KbxLe+OaQcJBVLb91uMZlgClX8YZW1vubRZBNuYbOmg7/RMLYhS6gbUIrZt80zxWTfhhgkj4/bPrmj33BAO8pZzRD560Jdj0eLxxneM3AAO8xZzQDjr7DPlJdCW2KASaSYBdaMVWfpZQV1q8WA6xQrVZTXcJWWL9aJtXPvdBEBmOAiQxWmCW053mqS0jF8zx0Op3Ie5OwfrVE/QeqC9nW5eXli+oaiFT5D4JTfFNd7VABAAAAAElFTkSuQmCC", "tileWidth": 48, "tileHeight": 48, "tileSeparationX": 0, "tileSeparationY": 0}
+  ]
+}
