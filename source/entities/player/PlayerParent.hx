@@ -10,18 +10,18 @@ import flixel.FlxG;
 import systems.Hud;
 import flixel.FlxSprite;
 import flixel.FlxObject;
-import systems.Animation;
+import systems.ExtendedAnimation;
 import systems.Action;
 import systems.Input;
 import flixel.input.keyboard.FlxKey;
-import entities.player.PlayerStates;
+import entities.player.PlayerLogic;
 
 class Player extends FlxSprite 
 {
 	// Systems
-	public var playerLogic:HeroStateLogics;
-	public var playerState:ActionSystem;
-	public var playerAnimation:AnimationSystem;
+	public var playerLogic:PlayerStateLogics;
+	public var actionSystem:ActionSystem;
+	public var playerAnimation:ExtAnimationSystem;
 	public var playerInput:InputSystem;
 
 	// Input
@@ -40,9 +40,9 @@ class Player extends FlxSprite
 	public var ySpeed:Float = 0;
 	
 	// Jumping
-	public var JUMP_SPEED(default, never):Float = -350;
+	public var JUMP_SPEED:Float = -350;
 	public var currentJumpCount:Int = 0;
-	public var maxJumpCount:Int = 2;
+	public var maxJumpCount:Int = 3;
 
 
 
@@ -51,9 +51,9 @@ class Player extends FlxSprite
 		super(X, Y);
 
 		// Set up the needed custom systems
-		playerLogic = new HeroStateLogics(this);
-		playerState = new ActionSystem(Normal);
-		playerAnimation = new AnimationSystem(this);
+		playerLogic = new PlayerStateLogics(this);
+		actionSystem = new ActionSystem(PlayerLogic.PlayerStates.Normal, PlayerLogic.PlayerStates);
+		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
 
 		gatherInputs();
@@ -85,6 +85,10 @@ class Player extends FlxSprite
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
 
+
+
+		grounded = this.isTouching(FlxObject.DOWN);
+		
 		// Update facing direction
 		facingDirection = getMoveDirectionCoefficient(playerInput.getAxis("horizontalAxis"));
 		if (facingDirection != 0)
@@ -122,7 +126,7 @@ class Player extends FlxSprite
 	**/
 	public function callStates():Void
 	{
-		switch (playerState.getState())
+		switch (actionSystem.getState())
 		{
 			case (PlayerStates.Normal):
 				playerLogic._State_Normal();
@@ -158,7 +162,7 @@ class Player extends FlxSprite
 	**/
 	public function isOnGround():Bool 
 	{ 
-		return this.isTouching(FlxObject.DOWN); 
+		return grounded; 
 	}
 
 	/**
@@ -168,7 +172,7 @@ class Player extends FlxSprite
 	public inline function canJump() 
 	{
 		return  (isOnGround() || (currentJumpCount < maxJumpCount)) &&
-				(playerState.getState() != Crouching);
+				(actionSystem.getState() != playerLogic.enumerator.Crouching);
 	}
 
 	/**
@@ -176,10 +180,39 @@ class Player extends FlxSprite
 		@param jumpCount Number of jumps allowed.
 		@return Returns **True** if jumping.
 	**/
-	public function jump(jumpCount:Int):Void 
+	public function jump():Void 
 	{
-		velocity.y = JUMP_SPEED;
-		currentJumpCount++;
+		//trace(currentJumpCount);
+		if (isOnGround())
+		{
+			currentJumpCount = maxJumpCount;
+		}
+		else 
+		{
+			if (currentJumpCount == maxJumpCount) { currentJumpCount--; }
+		}
+
+		if (playerInput.isInputDown("jump_just_pressed") && currentJumpCount > 0)
+		{
+			
+			velocity.y = JUMP_SPEED;
+			currentJumpCount--;
+		}
+
+		if (velocity.y < 0 && !playerInput.isInputDown("jump"))
+		{
+			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
+		}
+	}
+
+	public function moveX(targetX:Float = 0, interpRatio:Float = 0.5):Void 
+	{
+		velocity.x = FlxMath.lerp(velocity.x, targetX * facingDirection, interpRatio);
+
+		if ( (isTouching(FlxObject.LEFT) || isTouching(FlxObject.LEFT)) && (playerInput.isInputDown("left") || playerInput.isInputDown("right")) )
+		{
+			velocity.x = 0;
+		}
 	}
 
 	/**
@@ -187,13 +220,12 @@ class Player extends FlxSprite
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/
-	public function onWallCollision(player:FlxSprite, other:FlxSprite):Void
+	public function onWallCollision(player:Player, other:FlxSprite):Void
 	{
-		if (playerState.getState() == Jumping && isOnGround())
+		
+		if (player.actionSystem.getState() == player.playerLogic.enumerator.JUMPING && player.isOnGround())
 		{
-			currentJumpCount = 0;
-
-			playerState.setState(Normal);
+			player.actionSystem.setState(player.playerLogic.enumerator.Normal);
 		}
 	}
 

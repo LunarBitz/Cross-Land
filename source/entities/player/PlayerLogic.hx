@@ -1,7 +1,6 @@
-package entities.player.characters;
+package entities.player;
 
 import entities.player.PlayerParent;
-import entities.player.PlayerStates;
 import flixel.math.FlxMath;
 
 enum PlayerStates 
@@ -11,21 +10,21 @@ enum PlayerStates
 	Jumping;
 	Crouching;
     Sliding;
-    ATT;
+    PL;
 }
 
-class KholuStateLogics extends HeroStateLogics
+class PlayerStateLogics
 {
+    public var owner:Player;
+    public var enumerator:Dynamic;
 
-    override public function new(obj:Player) 
+    public function new(obj:Player) 
     { 
-        super(obj);
-
         owner = obj; 
         enumerator = PlayerStates;
     }    
      
-    override public function _State_Normal() 
+    public function _State_Normal() 
     {
         // Smooth out horizontal movement
         owner.velocity.x = FlxMath.lerp(owner.velocity.x, 200 * owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
@@ -33,21 +32,21 @@ class KholuStateLogics extends HeroStateLogics
         // Jump
         if (owner.playerInput.getInput("jump_just_pressed") == 1 && owner.canJump())
         {
-            owner.jump(owner.maxJumpCount);
-            owner.playerState.setState(Jumping);
+            owner.jump();
+            owner.actionSystem.setState(Jumping);
         }
     
         // Crouch
         if (owner.playerInput.getInput("crouch") == 1)
         {
-            owner.playerState.setState(Crouching);
+            owner.actionSystem.setState(Crouching);
         }
 
 
 
         //--- Update Animations ---//
         // Only allow an animation change if there has been a state change
-        if (owner.playerState.hasChanged())
+        if (owner.actionSystem.hasChanged())
         {
             // To uncrouching animation if previously crouching
             if (owner.playerAnimation.getPreviousAnimation() == "crouching")
@@ -59,11 +58,11 @@ class KholuStateLogics extends HeroStateLogics
         {
             // To idle animation if previously uncrouching
             if (owner.playerAnimation.getPreviousAnimation() == "uncrouching")
-                owner.playerAnimation.setAnimation("normal_idle");
+                owner.playerAnimation.setAnimation("idle");
         }
     }
 
-    override public function _State_Crouching() 
+    public function _State_Crouching() 
     {
         // Smooth out horizontal movement
         owner.velocity.x = FlxMath.lerp(owner.velocity.x, 0, owner.MOVEMENT_INTERP_RATIO);
@@ -71,17 +70,17 @@ class KholuStateLogics extends HeroStateLogics
         // Crouch
         if (owner.playerInput.getInput("crouch_released") == 1)
         {
-            owner.playerState.setState(Normal);
+            owner.actionSystem.setState(Normal);
         }
 
 
 
         //--- Update Animations ---//
-        if (owner.playerState.hasChanged())
+        if (owner.actionSystem.hasChanged())
             owner.playerAnimation.setAnimation("crouching", false, false, 0, true);
     }
 
-    override public function _State_Jumping() 
+    public function _State_Jumping() 
     {
         // Smooth out horizontal movement
         owner.velocity.x = FlxMath.lerp(owner.velocity.x, 250 * owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
@@ -89,21 +88,21 @@ class KholuStateLogics extends HeroStateLogics
         // 2nd, nth jump
         if (owner.playerInput.getInput("jump_just_pressed") == 1 && owner.canJump())
         {
-            owner.jump(owner.maxJumpCount);
-            owner.playerState.setState(Jumping);
+            owner.jump();
+            owner.actionSystem.setState(Jumping);
         }
         
 
 
         //--- Update Animations ---//
-        if (owner.playerState.hasChanged())
-            owner.playerAnimation.setAnimation("normal_idle");
+        if (owner.actionSystem.hasChanged())
+            owner.playerAnimation.setAnimation("idle");
     }
 
-    override public function _State_Sliding() 
+    public function _State_Sliding() 
     {
         //--- Update Animations ---//
-        if (owner.playerState.hasChanged())
+        if (owner.actionSystem.hasChanged())
             owner.playerAnimation.setAnimation("crouching");
     }
 }

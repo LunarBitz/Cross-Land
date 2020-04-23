@@ -9,11 +9,13 @@ class ActionSystem
 {
 	var previousState:Dynamic = null;
 	var currentState:Dynamic = null;
+	public var enumerator:Dynamic = null;
 
-	public function new(defaultAction:Dynamic = null) 
+	public function new(?defaultAction:Dynamic = null, enumRef:Dynamic) 
 	{
 		currentState = defaultAction;
 		previousState = currentState;
+		enumerator = enumRef;
     }
 
 	public function hasChanged():Bool

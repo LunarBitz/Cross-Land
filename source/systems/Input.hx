@@ -127,6 +127,16 @@ class InputSystem
 	}
 
 	/**
+		Similar to `getInput()` except a boolean is returned for cleaner condition statements
+		@param name Name of input key to get.
+		@return True if `getInput()` returns 1.
+	**/
+	public inline function isInputDown(name:String):Bool
+	{
+		return (inputs[name] == 1)? true : false;
+	}
+
+	/**
 		Gets the value from the `axis` map with the specified `name` as the key.
 		@param name Name of axis key to get.
 		@return Float value from `axis` map.
