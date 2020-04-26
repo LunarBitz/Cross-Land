@@ -1,5 +1,7 @@
 package entities.player;
 
+import flixel.util.FlxColor;
+import flixel.FlxBasic;
 import flixel.animation.FlxAnimation;
 import haxe.CallStack.StackItem;
 import flixel.system.debug.watch.Watch;
@@ -26,7 +28,7 @@ class Player extends FlxSprite
 
 	// Input
 	public var DEAD_ZONE(default, never):Float = 0.1;
-	public var MOVEMENT_INTERP_RATIO(default, never):Float = 1/16;
+	public var MOVEMENT_INTERP_RATIO(default, never):Float = 1/32;
 
 	// Generals
 	public var facingDirection:Int = 1;
@@ -43,7 +45,11 @@ class Player extends FlxSprite
 	public var JUMP_SPEED:Float = -350;
 	public var currentJumpCount:Int = 0;
 	public var maxJumpCount:Int = 3;
+	private var _jumping:Bool = false;
 
+	public var _solidsRef:Dynamic;
+
+	private var timePassed:Float = 0;
 
 
 	public function new(?X:Float = 0, ?Y:Float = 0) 
@@ -75,8 +81,6 @@ class Player extends FlxSprite
 
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
-
-		
 		
 	}
 
@@ -96,6 +100,9 @@ class Player extends FlxSprite
 
 		callStates();
 
+		updateVelocity();
+
+		timePassed += elapsed;
 		super.update(elapsed);
 	}
 
@@ -172,7 +179,7 @@ class Player extends FlxSprite
 	public inline function canJump() 
 	{
 		return  (isOnGround() || (currentJumpCount < maxJumpCount)) &&
-				(actionSystem.getState() != playerLogic.enumerator.Crouching);
+				(actionSystem.getState() != actionSystem.states.Crouching);
 	}
 
 	/**
@@ -182,7 +189,19 @@ class Player extends FlxSprite
 	**/
 	public function jump():Void 
 	{
-		//trace(currentJumpCount);
+		if (playerInput.isInputDown("jump_just_pressed") && currentJumpCount > 0 && !_jumping)
+		{
+			trace("JUMPPPP");
+			_jumping = true;
+			currentJumpCount--;
+			velocity.y = JUMP_SPEED;
+		}
+
+		if (playerInput.isInputDown("jump_released") && _jumping)
+		{
+			_jumping = false;
+		}
+
 		if (isOnGround())
 		{
 			currentJumpCount = maxJumpCount;
@@ -192,12 +211,7 @@ class Player extends FlxSprite
 			if (currentJumpCount == maxJumpCount) { currentJumpCount--; }
 		}
 
-		if (playerInput.isInputDown("jump_just_pressed") && currentJumpCount > 0)
-		{
-			
-			velocity.y = JUMP_SPEED;
-			currentJumpCount--;
-		}
+		
 
 		if (velocity.y < 0 && !playerInput.isInputDown("jump"))
 		{
@@ -205,14 +219,28 @@ class Player extends FlxSprite
 		}
 	}
 
-	public function moveX(targetX:Float = 0, interpRatio:Float = 0.5):Void 
+	public function setHorizontalMovement(target:Float, interpRatio:Float) 
 	{
-		velocity.x = FlxMath.lerp(velocity.x, targetX * facingDirection, interpRatio);
+		if (!willCollide(target * facingDirection, 0))
+            xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, target * facingDirection, interpRatio), 2);
+        else 
+            xSpeed = 0;
+	}
 
-		if ( (isTouching(FlxObject.LEFT) || isTouching(FlxObject.LEFT)) && (playerInput.isInputDown("left") || playerInput.isInputDown("right")) )
+	public function updateVelocity():Void 
+	{
+		if (willCollide(xSpeed, 0))
 		{
+			xSpeed = 0;
 			velocity.x = 0;
 		}
+		else
+			velocity.x = xSpeed;
+	}
+
+	public function willCollide(xVelocity:Float, yVelocity:Float):Bool
+	{
+		return overlapsAt(x + (xVelocity * FlxG.elapsed), y + (yVelocity * FlxG.elapsed), _solidsRef);		
 	}
 
 	/**
@@ -222,10 +250,13 @@ class Player extends FlxSprite
 	**/
 	public function onWallCollision(player:Player, other:FlxSprite):Void
 	{
-		
-		if (player.actionSystem.getState() == player.playerLogic.enumerator.JUMPING && player.isOnGround())
+		if (player.playerLogic.states != null)
 		{
-			player.actionSystem.setState(player.playerLogic.enumerator.Normal);
+				if ((player.isOnGround()) && 
+					(player.actionSystem.isAnAction([player.playerLogic.states.Jumping, player.playerLogic.states.Falling])))
+			{
+				player.actionSystem.setState(player.playerLogic.states.Normal);
+			}
 		}
 	}
 

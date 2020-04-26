@@ -16,18 +16,18 @@ enum PlayerStates
 class PlayerStateLogics
 {
     public var owner:Player;
-    public var enumerator:Dynamic;
+    public var states:Dynamic;
 
     public function new(obj:Player) 
     { 
         owner = obj; 
-        enumerator = PlayerStates;
+        states = PlayerLogic.PlayerStates;
     }    
      
     public function _State_Normal() 
     {
         // Smooth out horizontal movement
-        owner.velocity.x = FlxMath.lerp(owner.velocity.x, 200 * owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(200, owner.MOVEMENT_INTERP_RATIO);
         
         // Jump
         if (owner.playerInput.getInput("jump_just_pressed") == 1 && owner.canJump())
@@ -54,7 +54,7 @@ class PlayerStateLogics
         }
 
         // Only allow an animation change once the previous animation has finished
-        if (owner.playerAnimation.isFinished())
+        if (owner.playerAnimation.isOnLastFrame())
         {
             // To idle animation if previously uncrouching
             if (owner.playerAnimation.getPreviousAnimation() == "uncrouching")
@@ -65,7 +65,7 @@ class PlayerStateLogics
     public function _State_Crouching() 
     {
         // Smooth out horizontal movement
-        owner.velocity.x = FlxMath.lerp(owner.velocity.x, 0, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(0, owner.MOVEMENT_INTERP_RATIO);
 
         // Crouch
         if (owner.playerInput.getInput("crouch_released") == 1)
@@ -83,7 +83,7 @@ class PlayerStateLogics
     public function _State_Jumping() 
     {
         // Smooth out horizontal movement
-        owner.velocity.x = FlxMath.lerp(owner.velocity.x, 250 * owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(250, owner.MOVEMENT_INTERP_RATIO);
         
         // 2nd, nth jump
         if (owner.playerInput.getInput("jump_just_pressed") == 1 && owner.canJump())

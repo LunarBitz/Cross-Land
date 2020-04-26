@@ -8,8 +8,10 @@ enum PlayerStates
 {
 	Null;
 	Normal;
-	Jumping;
-	Crouching;
+    Jumping;
+    Falling;
+    Crouching;
+    Uncrouching;
     Sliding;
     KL;
 }
@@ -22,117 +24,144 @@ class KholuStateLogics extends PlayerStateLogics
         super(obj);
 
         owner = obj; 
-        enumerator = KholuLogic.PlayerStates;
+        states = KholuLogic.PlayerStates;
     }    
      
 
     
     override public function _State_Normal() 
     {
+        // #region Logic
+        // horizontal Movement
+        if (owner.playerAnimation.getCurrentAnimation() != "uncrouching")
+            owner.setHorizontalMovement(225, owner.MOVEMENT_INTERP_RATIO);
 
-        // Smooth out horizontal movement
-        owner.moveX(225, owner.MOVEMENT_INTERP_RATIO);
-        
         // Jump
         if (owner.playerInput.isInputDown("jump_just_pressed"))
             owner.actionSystem.setState(Jumping);
+
+        if (!owner.isOnGround())
+            owner.actionSystem.setState(Falling);
     
         // Crouch
         if (owner.playerInput.isInputDown("crouch"))
             owner.actionSystem.setState(Crouching);
+        // #endregion
 
-
-
-        //--- Update Animations ---//
-        if (owner.playerAnimation.getCurrentAnimation() != "uncrouching")
+        // #region Animations
+        if (owner.isOnGround())
         {
-            var xX = Math.floor(Math.abs(owner.velocity.x));
-            trace("Speed: ", xX);
-            if (xX <= 30)
-                owner.playerAnimation.setAnimation("idle_normal");
-            else if (xX > 30 && xX <= 80)
-                owner.playerAnimation.setAnimation("walking");
-            else if (xX > 80 && xX <= 160)
-                owner.playerAnimation.setAnimation("running");
-            else if (xX > 160)
-                owner.playerAnimation.setAnimation("sprinting");
-        }
-        else 
-        {
-            if (owner.playerAnimation.isFinished())
-                owner.playerAnimation.setAnimation("idle_normal");
+            if (owner.playerAnimation.isAnAnimation(["idle_normal", "walking", "running", "sprinting"]))
+            {
+                var xX = Math.floor(Math.abs(owner.velocity.x));
+                if (xX <= 3)
+                    owner.playerAnimation.setAnimation("idle_normal");
+                else if (xX > 3 && xX <= 80)
+                    owner.playerAnimation.setAnimation("walking");
+                else if (xX > 80 && xX <= 160)
+                    owner.playerAnimation.setAnimation("running");
+                else if (xX > 160)
+                    owner.playerAnimation.setAnimation("sprinting");
+
+                owner.animation.getByName("walking").frameRate = Math.round(((xX + 0.1) / 40) * 10);
+            }
         }
 
         // Only allow an animation change if there has been a state change
         if (owner.actionSystem.hasChanged())
         {
-            
             // To uncrouching animation if previously crouching
-            if (owner.playerAnimation.getPreviousAnimation() == "crouching")
-            {
-                owner.playerAnimation.setAnimation("uncrouching");
-            }
+            owner.playerAnimation.transition("uncrouching", "idle_normal");
 
             // To uncrouching animation if previously crouching
-            if (owner.playerAnimation.getPreviousAnimation() == "jumping")
-            {
-               owner.playerAnimation.setAnimation("idle_normal");
-            }
+            owner.playerAnimation.transition("jumping", "idle_normal");
+            owner.playerAnimation.transition("jump_fall", "idle_normal");
         }
-
-        // Only allow an animation change once the previous animation has finished
-        if (owner.playerAnimation.isFinished())
-        {
-            
-            // To idle animation if previously uncrouching
-            if (owner.playerAnimation.getPreviousAnimation() == "uncrouching")
-            {
-                owner.playerAnimation.setAnimation("idle_normal");
-            }
-        }
+        // #endregion
     }
 
 
 
     override public function _State_Crouching() 
     {
-        // Smooth out horizontal movement
-        owner.moveX(0, 0.9);
+        // #region Logic
+        // Horizontal movement
+        owner.setHorizontalMovement(0, owner.MOVEMENT_INTERP_RATIO * 4);
 
         // Crouch
         if (owner.playerInput.isInputDown("crouch_released"))
         {
-            owner.actionSystem.setState(Normal);
+            owner.actionSystem.setState(Uncrouching);
+        }
+        // #endregion
+
+        // #region Animations
+        if (owner.actionSystem.hasChanged())
+        {
+            owner.playerAnimation.setAnimation("crouching", false, false, 0, true);
+        }
+        // #endregion
+    }
+
+
+
+    public function _State_Uncrouching() 
+    {
+        // #region Logic
+        // Horizontal movement
+        owner.setHorizontalMovement(5, owner.MOVEMENT_INTERP_RATIO / 2);
+        // #endregion
+
+        // #region Animations
+        if (owner.actionSystem.hasChanged())
+        {
+            owner.playerAnimation.setAnimation("uncrouching");
         }
 
-
-
-        //--- Update Animations ---//
-        if (owner.actionSystem.hasChanged())
-            owner.playerAnimation.setAnimation("crouching", false, false, 0, true);
+        if (owner.playerAnimation.isOnLastFrame())
+        {
+            owner.actionSystem.setState(Normal);
+        }
+        // #endregion
     }
 
 
 
     override public function _State_Jumping() 
     {
-        
-        // Smooth out horizontal movement
-        owner.moveX(250, owner.MOVEMENT_INTERP_RATIO);
+        // #region Logic 
+        // Horizontal movement
+        owner.setHorizontalMovement(250, owner.MOVEMENT_INTERP_RATIO);
         
         owner.jump();
+        // #endregion
 
-        //--- Update Animations ---//
+        // #region Animations
         if (owner.velocity.y < 0)
             owner.playerAnimation.setAnimation("jumping");
         else if (owner.velocity.y >= 0)
             owner.playerAnimation.setAnimation("jump_fall");
+        // #endregion
+    }
+
+    public function _State_Falling() 
+    {
+        // #region Logic 
+        // Horizontal movement
+        owner.setHorizontalMovement(250, owner.MOVEMENT_INTERP_RATIO);
+        // #endregion
+
+        // #region Animations
+        if (owner.velocity.y >= 0)
+            owner.playerAnimation.setAnimation("jump_fall");
+        // #endregion
     }
 
     override public function _State_Sliding() 
     {
-        //--- Update Animations ---//
+        // #region Animations
         if (owner.actionSystem.hasChanged())
             owner.playerAnimation.setAnimation("crouching");
+        // #endregion
     }
 }

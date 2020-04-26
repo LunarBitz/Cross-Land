@@ -1,11 +1,14 @@
 package entities.player.characters;
 
+import flixel.util.FlxColor;
+import flixel.util.FlxSpriteUtil.LineStyle;
 import flixel.animation.FlxAnimation;
 import haxe.CallStack.StackItem;
 import flixel.system.debug.watch.Watch;
 import flixel.system.FlxSplash;
 import haxe.macro.Expr.Case;
 import flixel.math.FlxMath;
+
 import flixel.FlxG;
 import systems.Hud;
 import flixel.FlxSprite;
@@ -33,19 +36,22 @@ class Kholu extends Player
 		gatherInputs();
 
 		// Set up "gravity" (constant acceleration) and "terminal velocity" (max fall speed)
-		acceleration.y = GRAVITY * 1;
+		acceleration.y = GRAVITY * 0.9;
 		maxVelocity.y = TERMINAL_VELOCITY * 1;
-		JUMP_SPEED = -350 * 1;
+		JUMP_SPEED = -375 * 1;
+		maxJumpCount = 2;
 
 		// Set up graphics and animations
 		loadGraphic(AssetPaths.sprKholu__png, true, 32, 32);
+		setSize(frameWidth / 2, frameHeight - 4);
+		offset.set(width / 2, frameHeight - height);
+		//updateHitbox();
 
         gatherAnimations();
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
 
-		playerAnimation.setAnimation("idle_normal");
-		
+		playerAnimation.setAnimation("jump_fall");
 	}
 
 	override function update(elapsed:Float) 
@@ -53,7 +59,7 @@ class Kholu extends Player
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
 
-
+		trace('Prev: ${actionSystem.getPreviousState()} - Cur: ${actionSystem.getState()}');
 
 		grounded = this.isTouching(FlxObject.DOWN);
 
@@ -63,6 +69,8 @@ class Kholu extends Player
 			facing = (facingDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
 
 		callStates();
+
+		updateVelocity();
 
 		super.update(elapsed);
 	}
@@ -92,13 +100,13 @@ class Kholu extends Player
 		playerAnimation.createAnimation("uncrouching", [7,4,3,2], 60, false);
 		playerAnimation.createAnimation("jumping", [9,10], 20, true);
 		playerAnimation.createAnimation("falling_apex", [11,12], 20, true);
-		playerAnimation.createAnimation("falling_down", [13,14], 20, true);
-		playerAnimation.createAnimationChain("jump_fall", ["falling_apex", "falling_down"], 15, false, 2);
+		playerAnimation.createAnimation("falling_down", [13,14], 15, true);
+		playerAnimation.createAnimationChain("jump_fall", ["falling_apex", "falling_down"], 15, true, 2);
 		playerAnimation.createAnimation("damaged", [15,16], 20, false);
 		playerAnimation.createAnimation("walking", [17,18,19,20,21,22,23,24], 10, true);
 		playerAnimation.createAnimation("walking_holding", [25,26,27,28,29,30,31,32], 20, true);
-		playerAnimation.createAnimation("running", [33,34,35,36,37,38,39,40], 25, true);
-		playerAnimation.createAnimation("running_holding", [41,42,43,44,45,46,47,48], 25, true);
+		playerAnimation.createAnimation("running", [33,34,35,36,37,38,39,40], 15, true);
+		playerAnimation.createAnimation("running_holding", [41,42,43,44,45,46,47,48], 15, true);
 		playerAnimation.createAnimation("sprinting", [49,50,51,52,53,54,55,56], 25, true);
 		playerAnimation.createAnimation("sprinting_holding", [57,58,59,60,61,62,63,64], 25, true);
 		playerAnimation.createAnimation("throwing", [65,66,67,68], 20, true);
@@ -156,21 +164,17 @@ class Kholu extends Player
 	**/
 	override public function callStates():Void
 	{
-        for (state in Type.allEnums(playerLogic.enumerator))
+        for (state in Type.allEnums(playerLogic.states))
         { 
             var fn = Reflect.field(playerLogic, "_State_" + Std.string(state));
             //trace(Std.string(state));
-            if (fn != null && actionSystem.getState() == state)
-                Reflect.callMethod(playerLogic, fn, []);
+			if (fn != null && actionSystem.getState() == state)
+			{
+				//trace(Std.string(state));
+				Reflect.callMethod(playerLogic, fn, []);
+			}
+                
         }
-	}
-
-	override public function onWallCollision(player:Player, other:FlxSprite):Void
-	{
-		if (player.actionSystem.getState() == KholuLogic.PlayerStates.Jumping && player.isOnGround())
-		{
-			player.actionSystem.setState(KholuLogic.PlayerStates.Normal);
-		}
 	}
 
 	/**

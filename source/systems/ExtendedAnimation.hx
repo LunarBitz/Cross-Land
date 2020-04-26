@@ -104,6 +104,20 @@ class ExtAnimationSystem
     }
 
     /**
+        Trasition from one animation to another simply by checking the previous animation
+        @param fromAnim Previous animaiton you're changing from
+        @param toAnim Desired animation to change to
+    **/
+    public function transition(fromAnim:String, toAnim:String):Void
+    {
+        if (getPreviousAnimation() == fromAnim)
+        {
+            trace('From ${fromAnim} to ${toAnim}');
+            setAnimation(toAnim);
+        }
+    }
+
+    /**
         Change the animation to a sub-animation or chain-animation
         @param animName The string name of the animation you want to play.
         @param forcePlay Whether to force the animation to restart.
@@ -111,7 +125,7 @@ class ExtAnimationSystem
         @param startingFrame The frame number in the animation you want to start from. If a negative value is passed, a random frame is used.
         @param holdOnLastFrame Whether to pause the animation on the last frame.
     **/
-	public function setAnimation(animName:String, forcePlay:Bool = false, playReversed:Bool = false, startingFrame:Int = 0, holdOnLastFrame = false):String
+	public function setAnimation(animName:String, forcePlay:Bool = false, playReversed:Bool = false, specialLoop:Bool = true, startingFrame:Int = 0, holdOnLastFrame = false):String
 	{
         _previousAnimation = _currentAnimation;
         _previousFrame = _currentFrame;
@@ -125,12 +139,20 @@ class ExtAnimationSystem
 
             if (isOnLastFrame())
             {
-                owner.animation.curAnim.pause();  
-
-                if (!holdOnLastFrame && _animationLoopPoints[animName] != null && frameChanged())
+                if (specialLoop)
                 {
-                    new FlxTimer().start(owner.animation.curAnim.delay, _setToLoopFrame, 1);
+                    owner.animation.curAnim.pause();  
+
+                    if (!holdOnLastFrame && _animationLoopPoints[animName] != null && frameChanged())
+                    {
+                        new FlxTimer().start(owner.animation.curAnim.delay, _setToLoopFrame, 1);
+                    }
                 }
+            }
+            else
+            {
+                if (owner.animation.curAnim.paused)
+                    owner.animation.curAnim.resume();  
             }
         }
 
@@ -143,9 +165,7 @@ class ExtAnimationSystem
     private function _setToLoopFrame(timer:FlxTimer):Void
     {
         if (owner.animation.curAnim != null)
-        {
             owner.animation.curAnim.curFrame = _animationLoopPoints[owner.animation.curAnim.name];
-        }
     }
 
     /**
@@ -199,11 +219,14 @@ class ExtAnimationSystem
         Checks if the current animation is finished
         @return True if `finished` flag is up (raised with `stop()` ).
     **/
-    public function isFinished():Bool
+    public function isAnAnimation(?anims:Array<String> = null):Bool
     {
-        if (owner.animation.curAnim != null)
-            return owner.animation.curAnim.finished;
-        else
-            return false;
+        for (anim in anims)
+        {
+            if (getCurrentAnimation() == anim)
+                return true;
+        }
+
+        return false;
     }
 }

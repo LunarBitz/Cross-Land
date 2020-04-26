@@ -1,9 +1,11 @@
 package;
 
 
+import flixel.util.FlxColor;
 import flixel.FlxObject;
 import flixel.FlxG;
 import flixel.FlxSprite;
+using flixel.util.FlxSpriteUtil;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import entities.player.PlayerParent;
 import entities.player.characters.Kholu;
@@ -39,14 +41,13 @@ class PlayState extends FlxState
 		hud = new GameHUD();
  		add(hud);
 
-
 		super.create();
 	}
 
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
-
+		
 		if (solidTiles != null)
 		{
 			// Must handle x collisions before the y collisions or 
@@ -55,8 +56,12 @@ class PlayState extends FlxState
 			FlxG.overlap(player, solidTiles, player.onWallCollision, FlxObject.separateY);	
 		}
 
-		FlxG.overlap(player, coins, onCoinOverlap);
+		if (coins != null)
+		{
+			FlxG.overlap(player, coins, onCoinOverlap);
+		}
 
+		hud.updateFPS();
 	}
 
 	private function initOgmo3Map(projectPath:String, projectJson:String):Void 
@@ -70,6 +75,7 @@ class PlayState extends FlxState
 		{
 			solidTiles.add(new Wall(point.x, point.y, 48, 48));
 		}
+		player._solidsRef = solidTiles;
 
 		// Get the graphical tilemaps
 		// Note: When creating a tileset in a sprite editor, ALWAYS leave the first tile 
@@ -110,7 +116,6 @@ class PlayState extends FlxState
 		if (player.alive && player.exists && coin.alive && coin.exists)
 		{
 			hud.updateHUD(coin.MAX_VALUE);
-
 			coin.kill();
 		}
 	}

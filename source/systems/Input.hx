@@ -35,25 +35,25 @@ class InputSystem
 	/**
 		Creates the map entries for input binding later on.
 		@param name Name of entry to make.
-		@param incHeld Create the key held/pressed entry?
-		@param incPressed Create the key just pressed entry?
-		@param incReleased Create the key just released entry?
+		@param includeHeld Create the key held/pressed entry?
+		@param includePressed Create the key just pressed entry?
+		@param includeReleased Create the key just released entry?
 	**/
-	public function createInput(name:String, incHeld:Bool = true, incPressed:Bool = true, incReleased:Bool = true):Void
+	public function createInput(name:String, includeHeld:Bool = true, includePressed:Bool = true, includeReleased:Bool = true):Void
 	{
-		if (!incHeld && !incPressed && !incReleased)
+		if (!includeHeld && !includePressed && !includeReleased)
 		{
 			throw "No entry has been created within InputSystem.createInput(). Please set at least one of the booleans to true";
 			return;
 		}
-		else if (incHeld || incPressed || incReleased)
+		else if (includeHeld || includePressed || includeReleased)
 		{
 			inputKeys[name] = new Array<FlxKey>();
 		}
 
-		if (incHeld) { inputs[name] = -1; }
-		if (incPressed) { inputs[name + "_just_pressed"] = -1; }
-		if (incReleased) { inputs[name + "_released"] = -1; }
+		if (includeHeld) { inputs[name] = -1; }
+		if (includePressed) { inputs[name + "_just_pressed"] = -1; }
+		if (includeReleased) { inputs[name + "_released"] = -1; }
 	}
 
 	/**
@@ -162,7 +162,7 @@ class InputSystem
 		@param sign **-1** for the negative inputs, **1** for the positive inputs, **0** for all
 		@return List of keys from `axisKeys`.
 	**/
-	public function getAxisBinding(name:String, sign:Int = 0):Array<FlxKey>
+	public function getAxisBinding(name:String, ?sign:Int = 0):Array<FlxKey>
 	{
 		switch (sign)
 		{
@@ -179,8 +179,9 @@ class InputSystem
 
 	public function poll():Void
 	{
-		// Run through all inputs
+		// region Poll Inputs
 		if (inputs != null && inputKeys != null)
+		{
 			for (name in inputs.keys())
 			{
 				if (name.indexOf("_just_pressed") != -1)
@@ -190,13 +191,18 @@ class InputSystem
 				else
 					inputs[name] = FlxG.keys.anyPressed(inputKeys[name])? 1:0;
 			}
+		}
+		// end region
 
-		// Run through all axis
+		// region Poll Axis
 		if (axis != null && axisKeys != null)
+		{
 			for (name in axis.keys())
 			{
 				axis[name] = (getInput(axisKeys[name][1]) - getInput(axisKeys[name][0]));
 			}
+		}
+		// end region
 	}
-	
+
 }

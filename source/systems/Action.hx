@@ -9,13 +9,13 @@ class ActionSystem
 {
 	var previousState:Dynamic = null;
 	var currentState:Dynamic = null;
-	public var enumerator:Dynamic = null;
+	public var states:Dynamic = null;
 
 	public function new(?defaultAction:Dynamic = null, enumRef:Dynamic) 
 	{
 		currentState = defaultAction;
 		previousState = currentState;
-		enumerator = enumRef;
+		states = enumRef;
     }
 
 	public function hasChanged():Bool
@@ -39,6 +39,17 @@ class ActionSystem
     public function getPreviousState():Dynamic
     {
         return previousState;
-    }
+	}
+	
+	public function isAnAction(?actions:Array<Dynamic> = null):Bool
+	{
+		for (act in actions)
+		{
+			if (getState() == act)
+				return true;
+		}
+
+		return false;
+	}
     
 }
