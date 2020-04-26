@@ -1,6 +1,7 @@
 package;
 
 
+import Debug.DebugOverlay;
 import flixel.util.FlxColor;
 import flixel.FlxObject;
 import flixel.FlxG;
@@ -39,8 +40,10 @@ class PlayState extends FlxState
 		initOgmo3Map(AssetPaths.TestMap__ogmo, AssetPaths.TestMap__json);
 
 		hud = new GameHUD();
- 		add(hud);
+		add(hud);
 
+		add(new DebugOverlay());
+		 
 		super.create();
 	}
 
@@ -61,7 +64,6 @@ class PlayState extends FlxState
 			FlxG.overlap(player, coins, onCoinOverlap);
 		}
 
-		hud.updateFPS();
 	}
 
 	private function initOgmo3Map(projectPath:String, projectJson:String):Void 

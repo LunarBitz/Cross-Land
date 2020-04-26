@@ -33,7 +33,7 @@ class ExtAnimationSystem
     }
 
     /**
-        Return if the previous frame withing the current animation is different from the current frame
+        Return if the previous frame within the current animation is different from the current frame
         @return `True` if there was a change.
     **/
     public inline function frameChanged():Bool
@@ -216,8 +216,10 @@ class ExtAnimationSystem
     }
 
     /**
-        Checks if the current animation is finished
-        @return True if `finished` flag is up (raised with `stop()` ).
+        Checks if the current animation equals any of the specified animations.
+        Use to clean up long if statements
+        @param anims List of animations that you wish to compare with the current animation
+        @return True if the current animation is equal to any entry from  `anims`.
     **/
     public function isAnAnimation(?anims:Array<String> = null):Bool
     {

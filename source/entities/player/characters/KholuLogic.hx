@@ -32,6 +32,8 @@ class KholuStateLogics extends PlayerStateLogics
     override public function _State_Normal() 
     {
         // #region Logic
+        owner.canChangeDirections = true;
+
         // horizontal Movement
         if (owner.playerAnimation.getCurrentAnimation() != "uncrouching")
             owner.setHorizontalMovement(225, owner.MOVEMENT_INTERP_RATIO);
@@ -85,6 +87,8 @@ class KholuStateLogics extends PlayerStateLogics
     override public function _State_Crouching() 
     {
         // #region Logic
+        owner.canChangeDirections = false;
+
         // Horizontal movement
         owner.setHorizontalMovement(0, owner.MOVEMENT_INTERP_RATIO * 4);
 
@@ -108,6 +112,8 @@ class KholuStateLogics extends PlayerStateLogics
     public function _State_Uncrouching() 
     {
         // #region Logic
+        owner.canChangeDirections = false;
+
         // Horizontal movement
         owner.setHorizontalMovement(5, owner.MOVEMENT_INTERP_RATIO / 2);
         // #endregion
@@ -130,6 +136,8 @@ class KholuStateLogics extends PlayerStateLogics
     override public function _State_Jumping() 
     {
         // #region Logic 
+        owner.canChangeDirections = true;
+
         // Horizontal movement
         owner.setHorizontalMovement(250, owner.MOVEMENT_INTERP_RATIO);
         
@@ -144,9 +152,13 @@ class KholuStateLogics extends PlayerStateLogics
         // #endregion
     }
 
+
+
     public function _State_Falling() 
     {
         // #region Logic 
+        owner.canChangeDirections = true;
+
         // Horizontal movement
         owner.setHorizontalMovement(250, owner.MOVEMENT_INTERP_RATIO);
         // #endregion
@@ -157,8 +169,12 @@ class KholuStateLogics extends PlayerStateLogics
         // #endregion
     }
 
+
+    
     override public function _State_Sliding() 
     {
+        owner.canChangeDirections = false;
+
         // #region Animations
         if (owner.actionSystem.hasChanged())
             owner.playerAnimation.setAnimation("crouching");

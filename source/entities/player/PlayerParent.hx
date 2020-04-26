@@ -31,6 +31,7 @@ class Player extends FlxSprite
 	public var MOVEMENT_INTERP_RATIO(default, never):Float = 1/32;
 
 	// Generals
+	public var canChangeDirections:Bool = false;
 	public var facingDirection:Int = 1;
 	public var grounded:Bool = false;
 
@@ -89,17 +90,15 @@ class Player extends FlxSprite
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
 
-
-
 		grounded = this.isTouching(FlxObject.DOWN);
 		
 		// Update facing direction
-		facingDirection = getMoveDirectionCoefficient(playerInput.getAxis("horizontalAxis"));
-		if (facingDirection != 0)
-			facing = (facingDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
+		updateDirection();
 
+		// Call the main logic states of the player
 		callStates();
 
+		// Apply velocity
 		updateVelocity();
 
 		timePassed += elapsed;
@@ -120,6 +119,9 @@ class Player extends FlxSprite
 		playerInput.bindAxis("horizontalAxis", "left", "right");
 	}
 
+	/**
+		Helper to add all animations of the player
+	**/
 	private function gatherAnimations():Void 
 	{
 		animation.add("idle", [0], 45, false);
@@ -129,26 +131,17 @@ class Player extends FlxSprite
 
 	/**
 		Function to handle what happens with each action state.
-		See `HeroStates.hx`
+		See `[xx]Logic.hx`
 	**/
 	public function callStates():Void
 	{
-		switch (actionSystem.getState())
-		{
-			case (PlayerStates.Normal):
-				playerLogic._State_Normal();
-
-			case (PlayerStates.Crouching):
-				playerLogic._State_Crouching();
-
-			case (PlayerStates.Jumping):
-				playerLogic._State_Jumping();
-
-			case (PlayerStates.Sliding):
-				playerLogic._State_Sliding();
-				
-			case (PlayerStates.Null):
-			default:
+		for (state in Type.allEnums(playerLogic.states))
+		{ 
+			var fn = Reflect.field(playerLogic, "_State_" + Std.string(state));
+			if (fn != null && actionSystem.getState() == state)
+			{
+				Reflect.callMethod(playerLogic, fn, []);
+			}	
 		}
 	}
 
@@ -163,9 +156,16 @@ class Player extends FlxSprite
 		return (Math.abs(axis) <= DEAD_ZONE)? 0 : FlxMath.signOf(axis);
 	}
 
+	private function updateDirection():Void
+	{
+		facingDirection = getMoveDirectionCoefficient(playerInput.getAxis("horizontalAxis"));
+		if (facingDirection != 0 && canChangeDirections)
+			facing = (facingDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
+	}
+
 	/**
 		Returns if the player is on the ground or not
-		@return Returns `grounded`.
+		@return Returns `grounded` I.E; **True** when the player is touching the top surface of a solid.
 	**/
 	public function isOnGround():Bool 
 	{ 
@@ -179,29 +179,36 @@ class Player extends FlxSprite
 	public inline function canJump() 
 	{
 		return  (isOnGround() || (currentJumpCount < maxJumpCount)) &&
-				(actionSystem.getState() != actionSystem.states.Crouching);
+				(!actionSystem.isAnAction([Crouching, Uncrouching]));
 	}
 
 	/**
-		Simple function for handling jump logic.
-		@param jumpCount Number of jumps allowed.
-		@return Returns **True** if jumping.
+		Function for handling variable height, multi-jumping.
+		Should be called in Update, not a single frame event
 	**/
 	public function jump():Void 
 	{
+		// Allow a single burst of force
 		if (playerInput.isInputDown("jump_just_pressed") && currentJumpCount > 0 && !_jumping)
 		{
-			trace("JUMPPPP");
 			_jumping = true;
 			currentJumpCount--;
 			velocity.y = JUMP_SPEED;
 		}
 
+		// Ensures that only a single burst happens
+		// Function was being call twice in the same frame for some reason.
+		// Tested with accumalting the `elapsed` time and notice that functions were being 
+		//		called twice and showed the same timestamp.
+		// Researched and found out that others were having the same problem and that
+		//		using a second boolean was the best solution at the moment
+		// Source: http://forum.haxeflixel.com/topic/159/flxbutton-justpressed-behavior
 		if (playerInput.isInputDown("jump_released") && _jumping)
 		{
 			_jumping = false;
 		}
 
+		// Reset jump count if grounded and strip one jump if off the ground
 		if (isOnGround())
 		{
 			currentJumpCount = maxJumpCount;
@@ -211,15 +218,22 @@ class Player extends FlxSprite
 			if (currentJumpCount == maxJumpCount) { currentJumpCount--; }
 		}
 
-		
-
+		// Allow for variable height jumping
+		// Tapping = small jumps
+		// Holding = max jump height
 		if (velocity.y < 0 && !playerInput.isInputDown("jump"))
 		{
 			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
 		}
 	}
 
-	public function setHorizontalMovement(target:Float, interpRatio:Float) 
+	/**
+		Update `xSpeed` when approriate.
+		Does NOT apply the value to the velocity. Call `updateVelocity()` in update aftwards.
+		@param target Desired speed in the x direction
+		@param interpRatio Ratio between 0 to 1 that determines how fast the player will reach `target`. 0 = Never, 1 = Instant, 0.01 to 0.99 = eventually
+	**/
+	public function setHorizontalMovement(target:Float, interpRatio:Float):Void
 	{
 		if (!willCollide(target * facingDirection, 0))
             xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, target * facingDirection, interpRatio), 2);
@@ -227,6 +241,9 @@ class Player extends FlxSprite
             xSpeed = 0;
 	}
 
+	/**
+		Function that updates the actual velocity of the player
+	**/
 	public function updateVelocity():Void 
 	{
 		if (willCollide(xSpeed, 0))
@@ -238,6 +255,12 @@ class Player extends FlxSprite
 			velocity.x = xSpeed;
 	}
 
+	/**
+		Checks ahead to see if the player will collide if continuing with the desired velocity
+		@param xVelocity Velocity in X direction to check future position with
+		@param yVelocity Velocity in Y direction to check future position with
+		@return **True** if the player will be overlapping a solid in the future
+	**/
 	public function willCollide(xVelocity:Float, yVelocity:Float):Bool
 	{
 		return overlapsAt(x + (xVelocity * FlxG.elapsed), y + (yVelocity * FlxG.elapsed), _solidsRef);		
