@@ -1,5 +1,6 @@
 package entities.player.characters;
 
+import Debug.DebugOverlay;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil.LineStyle;
 import flixel.animation.FlxAnimation;
@@ -37,7 +38,7 @@ class Kholu extends Player
 
 		// Set up "gravity" (constant acceleration) and "terminal velocity" (max fall speed)
 		acceleration.y = GRAVITY * 0.9;
-		maxVelocity.y = TERMINAL_VELOCITY * 1;
+		maxVelocity.y = TERMINAL_VELOCITY * 0.75;
 		JUMP_SPEED = -375 * 1;
 		maxJumpCount = 2;
 
@@ -45,9 +46,9 @@ class Kholu extends Player
 		loadGraphic(AssetPaths.sprKholu__png, true, 32, 32);
 		setSize(frameWidth / 2, frameHeight - 4);
 		offset.set(width / 2, frameHeight - height);
-		//updateHitbox();
 
-        gatherAnimations();
+		gatherAnimations();
+		
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
 
@@ -59,18 +60,20 @@ class Kholu extends Player
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
 
-		trace('Prev: ${actionSystem.getPreviousState()} - Cur: ${actionSystem.getState()}');
-
 		grounded = this.isTouching(FlxObject.DOWN);
-
+		
 		// Update facing direction
-		facingDirection = getMoveDirectionCoefficient(playerInput.getAxis("horizontalAxis"));
-		if (facingDirection != 0)
-			facing = (facingDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
+		updateDirection();
 
+		// Call the main logic states of the player
 		callStates();
 
+		// Apply velocity
 		updateVelocity();
+
+		// write variables to debug overlay
+		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
+		DebugOverlay.watchValue("Current State", actionSystem.getState());
 
 		super.update(elapsed);
 	}
@@ -88,7 +91,10 @@ class Kholu extends Player
 		playerInput.bindInput("crouch", [FlxKey.DOWN]);
 		playerInput.bindAxis("horizontalAxis", "left", "right");
     }
-    
+	
+	/**
+		Helper to add all animations of the player
+	**/
     override private function gatherAnimations():Void 
     {
         playerAnimation.createAnimation("idle_normal", [1], 20, false);
@@ -156,46 +162,6 @@ class Kholu extends Player
 		playerAnimation.createAnimation("arm_swing_midair_down", [217,218,219,220,221], 20, false);
 		playerAnimation.createAnimation("monkeybars", [222,223,224,225,226,227], 20, true);
 		playerAnimation.createAnimation("arm_swing_climbing_backward", [228,229,230,231], 20, false);
-	}
-
-	/**
-		Function to handle what happens with each action state.
-		See `HeroStates.hx`
-	**/
-	override public function callStates():Void
-	{
-        for (state in Type.allEnums(playerLogic.states))
-        { 
-            var fn = Reflect.field(playerLogic, "_State_" + Std.string(state));
-            //trace(Std.string(state));
-			if (fn != null && actionSystem.getState() == state)
-			{
-				//trace(Std.string(state));
-				Reflect.callMethod(playerLogic, fn, []);
-			}
-                
-        }
-	}
-
-	/**
-		Function that's called to resolve collision overlaping with damage inducing objects when invoked.
-		@param player Object that collided with something.
-		@param other Object that `player` has collided with.
-	**/
-	override public function onDamageCollision(player:FlxSprite, other:FlxSprite):Void
-	{
-		// We ONLY do a pixel perfect check if the object in question has collided with our simplified hitbox.
-		//
-		// Checking perfectly since we have a character that can crouch
-		// WAY easier than calculating and updating the hitbox. 
-		// It really is, since HaxeFlixel doesn't do a good job scaling with the set origin
-		//	which was resulting in glitchy floor detection
-		if (FlxG.pixelPerfectOverlap(player, other))
-		{
-			trace("We have really collided with the object");
-
-			other.kill();
-		}
 	}
 
 }

@@ -7,9 +7,10 @@ enum PlayerStates
 {
 	Null;
 	Normal;
-	Jumping;
-	Crouching;
-    Sliding;
+    Jumping;
+    Falling;
+    Crouching;
+    Uncrouching;
     PL;
 }
 
@@ -26,6 +27,8 @@ class PlayerStateLogics
      
     public function _State_Normal() 
     {
+        owner.canChangeDirections = true;
+
         // Smooth out horizontal movement
         owner.setHorizontalMovement(200, owner.MOVEMENT_INTERP_RATIO);
         
@@ -64,6 +67,8 @@ class PlayerStateLogics
 
     public function _State_Crouching() 
     {
+        owner.canChangeDirections = false;
+
         // Smooth out horizontal movement
         owner.setHorizontalMovement(0, owner.MOVEMENT_INTERP_RATIO);
 
@@ -82,6 +87,8 @@ class PlayerStateLogics
 
     public function _State_Jumping() 
     {
+        owner.canChangeDirections = true;
+
         // Smooth out horizontal movement
         owner.setHorizontalMovement(250, owner.MOVEMENT_INTERP_RATIO);
         
@@ -101,6 +108,8 @@ class PlayerStateLogics
 
     public function _State_Sliding() 
     {
+        owner.canChangeDirections = false;
+
         //--- Update Animations ---//
         if (owner.actionSystem.hasChanged())
             owner.playerAnimation.setAnimation("crouching");
