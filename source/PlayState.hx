@@ -48,7 +48,7 @@ class PlayState extends FlxState
 
 		FlxG.camera.follow(player, PLATFORMER, 1/16);
 
-		initOgmo3Map(AssetPaths.TestMap__ogmo, AssetPaths.TestMap__json);
+		initOgmo3Map(AssetPaths.CrossLandsMaps__ogmo, AssetPaths.dusk_timberland_zone_1__json);
 
 		hud = new GameHUD();
 		add(hud);
@@ -79,14 +79,14 @@ class PlayState extends FlxState
 
 	private function initOgmo3Map(projectPath:String, projectJson:String):Void 
 	{
-		map = new FlxOgmo3Loader(AssetPaths.TestMap__ogmo, AssetPaths.TestMap__json);	
+		map = new FlxOgmo3Loader(projectPath, projectJson);	
 
 		// Get the solid objects for collission
-		var grid:Map<String, Array<flixel.math.FlxPoint>> = map.loadGridMap("solid");
+		var grid:Map<String, Array<flixel.math.FlxPoint>> = map.loadGridMap("collision");
 		solidTiles = new FlxTypedGroup<Wall>();
 		for (point in grid['1'])
 		{
-			solidTiles.add(new Wall(point.x, point.y, 48, 48));
+			solidTiles.add(new Wall(point.x, point.y, 16, 16));
 		}
 		player._solidsRef = solidTiles;
 		/*
@@ -98,11 +98,11 @@ class PlayState extends FlxState
 		// Note: When creating a tileset in a sprite editor, ALWAYS leave the first tile 
 		//		 blank (0 alpha)! Will save you a lot of time and spared of the headache 
 		// 		 trying to figure out why the tiles aren't rendering.
-		graphicTiles = map.loadTilemap(AssetPaths.sprStationTileset__png, "graphics");
+		graphicTiles = map.loadTilemap(AssetPaths.tsGrasstop__png, "graphics");
 		graphicTiles.follow();
 		// Disable collision for tiles 1-4 since we already established a collision grid
-		graphicTiles.setTileProperties(1, FlxObject.NONE, null, null, 4);
-
+		graphicTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
+		
 		// Get all entities
 		cannons = new FlxTypedGroup<Cannon>();
 		coins = new FlxTypedGroup<Coin>();

@@ -51,7 +51,8 @@ class Player extends FlxSprite
 	public var JUMP_SPEED:Float = -350;
 	public var currentJumpCount:Int = 0;
 	public var maxJumpCount:Int = 3;
-	private var _jumping:Bool = false;
+	private var jumpBufferTimer:Int = 0;
+	private var jumpBufferFrames:Int = 8;
 
 	public var _solidsRef:Dynamic;
 
@@ -194,32 +195,49 @@ class Player extends FlxSprite
 	}
 
 	/**
-		Function for handling variable height, multi-jumping.
-		Should be called in Update, not a single frame event
+		Function for handling variable height, multi-buffer-jumping.
+		Should be called in Update, not a single frame event. 
+		Single frame handling is done within
 	**/
 	public function jump():Void 
 	{
 		// Reset jump count if grounded and strip one jump if off the ground
 		if (isOnGround())
 		{
-			#if debug
-			trace('Jump() || Jump Count Reseted!');
-			#end
 			currentJumpCount = maxJumpCount;
+
+			// Follow through with jump if jump buffer is within frames
+			if (jumpBufferTimer < jumpBufferFrames)
+			{
+				currentJumpCount--;
+				velocity.y = JUMP_SPEED;
+				jumpBufferTimer = jumpBufferFrames;
+
+				#if debug
+				trace('Jump() || Buffer Jumping - Time:${timePassed}');
+				#end
+			}
 		}
 		else 
 		{
 			if (currentJumpCount == maxJumpCount) { currentJumpCount--; }
 		}
 
-		// Allow a single burst of force
-		if (playerInput.isInputDown("jump_just_pressed") && currentJumpCount > 0)
+		if (playerInput.isInputDown("jump_just_pressed"))
 		{
-			#if debug
-			trace('Jump() || Pressed Jump - Time:${timePassed}');
-			#end
-			currentJumpCount--;
-			velocity.y = JUMP_SPEED;
+			// Reset jump buffer for next jump (including floor jumping)
+			jumpBufferTimer = 0;
+
+			// Only jump if the player has jumps left
+			if (currentJumpCount > 0)
+			{
+				currentJumpCount--;
+				velocity.y = JUMP_SPEED;
+
+				#if debug
+				trace('Jump() || Pressed Jump - Time:${timePassed}');
+				#end
+			}	
 		}
 
 		// Allow for variable height jumping
@@ -229,6 +247,8 @@ class Player extends FlxSprite
 		{
 			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
 		}
+
+		++jumpBufferTimer; // Increase buffer
 	}
 
 	/**

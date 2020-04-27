@@ -36,7 +36,7 @@ class KholuStateLogics extends PlayerStateLogics
 
         // horizontal Movement
         if (owner.playerAnimation.getCurrentAnimation() != "uncrouching")
-            owner.setHorizontalMovement(225, owner.MOVEMENT_INTERP_RATIO);
+            owner.setHorizontalMovement(175, owner.MOVEMENT_INTERP_RATIO);
 
         // Jump
         if (owner.playerInput.isInputDown("jump_just_pressed"))
@@ -58,11 +58,11 @@ class KholuStateLogics extends PlayerStateLogics
                 var xX = Math.floor(Math.abs(owner.velocity.x));
                 if (xX <= 3)
                     owner.playerAnimation.setAnimation("idle_normal");
-                else if (xX > 3 && xX <= 80)
+                else if (xX > 3 && xX <= 60)
                     owner.playerAnimation.setAnimation("walking");
-                else if (xX > 80 && xX <= 160)
+                else if (xX > 60 && xX <= 120)
                     owner.playerAnimation.setAnimation("running");
-                else if (xX > 160)
+                else if (xX > 120)
                     owner.playerAnimation.setAnimation("sprinting");
 
                 owner.animation.getByName("walking").frameRate = Math.round(((xX + 0.1) / 40) * 10);
@@ -139,7 +139,7 @@ class KholuStateLogics extends PlayerStateLogics
         owner.canChangeDirections = true;
 
         // Horizontal movement
-        owner.setHorizontalMovement(250, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(200, owner.MOVEMENT_INTERP_RATIO);
         
         owner.jump();
         // #endregion
@@ -160,7 +160,7 @@ class KholuStateLogics extends PlayerStateLogics
         owner.canChangeDirections = true;
 
         // Horizontal movement
-        owner.setHorizontalMovement(250, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(175, owner.MOVEMENT_INTERP_RATIO);
         // #endregion
 
         // #region Animations
