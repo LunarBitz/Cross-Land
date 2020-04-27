@@ -11,11 +11,10 @@ class ActionSystem
 	var currentState:Dynamic = null;
 	public var states:Dynamic = null;
 
-	public function new(?defaultAction:Dynamic = null, enumRef:Dynamic) 
+	public function new(?defaultAction:Dynamic = null) 
 	{
 		currentState = defaultAction;
 		previousState = currentState;
-		states = enumRef;
     }
 
 	/**

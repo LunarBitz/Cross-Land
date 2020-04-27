@@ -59,7 +59,7 @@ class Player extends FlxSprite
 
 		// Set up the needed custom systems
 		playerLogic = new PlayerStateLogics(this);
-		actionSystem = new ActionSystem(PlayerLogic.PlayerStates.Normal, PlayerLogic.PlayerStates);
+		actionSystem = new ActionSystem(playerLogic.states.Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
 
@@ -188,34 +188,27 @@ class Player extends FlxSprite
 	**/
 	public function jump():Void 
 	{
-		// Allow a single burst of force
-		if (playerInput.isInputDown("jump_just_pressed") && currentJumpCount > 0 && !_jumping)
-		{
-			_jumping = true;
-			currentJumpCount--;
-			velocity.y = JUMP_SPEED;
-		}
-
-		// Ensures that only a single burst happens
-		// Function was being call twice in the same frame for some reason.
-		// Tested with accumalting the `elapsed` time and notice that functions were being 
-		//		called twice and showed the same timestamp.
-		// Researched and found out that others were having the same problem and that
-		//		using a second boolean was the best solution at the moment
-		// Source: http://forum.haxeflixel.com/topic/159/flxbutton-justpressed-behavior
-		if (playerInput.isInputDown("jump_released") && _jumping)
-		{
-			_jumping = false;
-		}
-
 		// Reset jump count if grounded and strip one jump if off the ground
 		if (isOnGround())
 		{
+			#if debug
+			trace('Jump() || Jump Count Reseted!');
+			#end
 			currentJumpCount = maxJumpCount;
 		}
 		else 
 		{
 			if (currentJumpCount == maxJumpCount) { currentJumpCount--; }
+		}
+
+		// Allow a single burst of force
+		if (playerInput.isInputDown("jump_just_pressed") && currentJumpCount > 0)
+		{
+			#if debug
+			trace('Jump() || Pressed Jump - Time:${timePassed}');
+			#end
+			currentJumpCount--;
+			velocity.y = JUMP_SPEED;
 		}
 
 		// Allow for variable height jumping

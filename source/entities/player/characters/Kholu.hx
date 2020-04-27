@@ -30,7 +30,7 @@ class Kholu extends Player
 
 		// Set up the needed custom systems
 		playerLogic = new KholuStateLogics(this);
-		actionSystem = new ActionSystem(Normal, KholuLogic.PlayerStates);
+		actionSystem = new ActionSystem(Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
 
@@ -39,8 +39,8 @@ class Kholu extends Player
 		// Set up "gravity" (constant acceleration) and "terminal velocity" (max fall speed)
 		acceleration.y = GRAVITY * 0.9;
 		maxVelocity.y = TERMINAL_VELOCITY * 0.75;
-		JUMP_SPEED = -375 * 1;
-		maxJumpCount = 2;
+		JUMP_SPEED = -375;
+		maxJumpCount = 4;
 
 		// Set up graphics and animations
 		loadGraphic(AssetPaths.sprKholu__png, true, 32, 32);
@@ -52,29 +52,17 @@ class Kholu extends Player
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
 
-		playerAnimation.setAnimation("jump_fall");
+		grounded = false;
+		playerAnimation.setAnimation("idle_normal");
 	}
 
 	override function update(elapsed:Float) 
 	{
-		// Set up nicer input-handling for movement.
-		playerInput.poll();
-
-		grounded = this.isTouching(FlxObject.DOWN);
-		
-		// Update facing direction
-		updateDirection();
-
-		// Call the main logic states of the player
-		callStates();
-
-		// Apply velocity
-		updateVelocity();
-
-		// write variables to debug overlay
+		// Write variables to debug overlay
 		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
 
+		// We're updating from PlayerLogix.hx bois
 		super.update(elapsed);
 	}
 

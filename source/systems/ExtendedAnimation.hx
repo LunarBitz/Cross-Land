@@ -112,7 +112,9 @@ class ExtAnimationSystem
     {
         if (getPreviousAnimation() == fromAnim)
         {
-            trace('From ${fromAnim} to ${toAnim}');
+            #if debug
+			trace('[ExtendedAnimation.hx].transition() || From ${fromAnim} to ${toAnim}');
+			#end
             setAnimation(toAnim);
         }
     }

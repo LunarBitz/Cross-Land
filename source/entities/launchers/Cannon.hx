@@ -25,7 +25,7 @@ class Cannon extends FlxSprite
     {
         super(X, Y);
 
-        cannonState = new ActionSystem(CannonStates.Idle, CannonStates);
+        cannonState = new ActionSystem(CannonStates.Idle);
 
         loadGraphic(AssetPaths.sprCannon_1__png, false, 32, 32);
 
