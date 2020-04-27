@@ -1,5 +1,6 @@
 package entities.player;
 
+import systems.PixelSensor;
 import flixel.util.FlxColor;
 import flixel.FlxBasic;
 import flixel.animation.FlxAnimation;
@@ -38,6 +39,10 @@ class Player extends FlxSprite
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
 	public var TERMINAL_VELOCITY(default, never):Float = 1500;
+	/*
+	public var leftSensor:PixelSensor;
+	public var rightSensor:PixelSensor;
+	*/
 
 	public var xSpeed:Float = 0;
 	public var ySpeed:Float = 0;
@@ -62,6 +67,12 @@ class Player extends FlxSprite
 		actionSystem = new ActionSystem(playerLogic.states.Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
+		/*
+		leftSensor = new PixelSensor(X, Y, -7, 24, this);
+		leftSensor._solids = _solidsRef;
+		rightSensor = new PixelSensor(X + width, Y, 7, 24, this);
+		rightSensor._solids = _solidsRef;
+		*/
 
 		gatherInputs();
 
