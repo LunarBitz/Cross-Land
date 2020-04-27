@@ -34,6 +34,10 @@ class PlayState extends FlxState
 	{
 		player = new Kholu();
 		add(player);
+		/*
+		add(player.leftSensor);
+		add(player.rightSensor);
+		*/
 
 		FlxG.camera.follow(player, PLATFORMER, 1/16);
 
@@ -78,6 +82,10 @@ class PlayState extends FlxState
 			solidTiles.add(new Wall(point.x, point.y, 48, 48));
 		}
 		player._solidsRef = solidTiles;
+		/*
+		player.leftSensor._solids = solidTiles;
+		player.rightSensor._solids = solidTiles;
+		*/
 
 		// Get the graphical tilemaps
 		// Note: When creating a tileset in a sprite editor, ALWAYS leave the first tile 

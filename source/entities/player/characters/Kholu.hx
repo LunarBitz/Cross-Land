@@ -1,6 +1,9 @@
 package entities.player.characters;
 
+import flixel.math.FlxPoint;
+import flixel.math.FlxAngle;
 import Debug.DebugOverlay;
+import systems.PixelSensor;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil.LineStyle;
 import flixel.animation.FlxAnimation;
@@ -23,6 +26,8 @@ import entities.player.PlayerParent;
 
 class Kholu extends Player 
 {
+
+	
 
 	override public function new(?X:Float = 0, ?Y:Float = 0) 
 	{
@@ -47,6 +52,13 @@ class Kholu extends Player
 		setSize(frameWidth / 2, frameHeight - 4);
 		offset.set(width / 2, frameHeight - height);
 
+		/*
+		leftSensor = new PixelSensor(X, Y, -7, 24, this);
+		leftSensor._solids = _solidsRef;
+		rightSensor = new PixelSensor(X, Y, 18, 24, this);
+		rightSensor._solids = _solidsRef;
+		*/
+
 		gatherAnimations();
 		
 		setFacingFlip(FlxObject.LEFT, true, false);
@@ -58,6 +70,15 @@ class Kholu extends Player
 
 	override function update(elapsed:Float) 
 	{
+		/*
+			var p1:FlxPoint = leftSensor.pushDown(4);
+			var p2:FlxPoint = rightSensor.pushDown(4);
+			if (p1 != null && p2 != null)
+			{
+				trace(FlxAngle.angleBetween(leftSensor, rightSensor, true));
+			}
+		*/
+		
 		// Write variables to debug overlay
 		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
@@ -78,6 +99,8 @@ class Kholu extends Player
 		playerInput.bindInput("jump", [FlxKey.Z]);
 		playerInput.bindInput("crouch", [FlxKey.DOWN]);
 		playerInput.bindAxis("horizontalAxis", "left", "right");
+
+		playerInput.bindInput("push", [FlxKey.V]);
     }
 	
 	/**
