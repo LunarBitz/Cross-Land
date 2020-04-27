@@ -27,7 +27,12 @@ import entities.player.PlayerParent;
 class Kholu extends Player 
 {
 
-	
+	/**
+		Read about how inheritance based objects are inferior to composition based ones. 
+		I could switch from inheritance to composition by setting up the base class as a 
+			variable like how i've done with the logic, action system, and input system 
+			below.
+	**/
 
 	override public function new(?X:Float = 0, ?Y:Float = 0) 
 	{
@@ -80,8 +85,10 @@ class Kholu extends Player
 		*/
 		
 		// Write variables to debug overlay
+		#if debug
 		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
+		#end
 
 		// We're updating from PlayerLogix.hx bois
 		super.update(elapsed);

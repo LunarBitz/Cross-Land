@@ -6,18 +6,22 @@ import flixel.util.FlxColor;
 import flixel.FlxObject;
 import flixel.FlxG;
 import flixel.FlxSprite;
-using flixel.util.FlxSpriteUtil;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import entities.player.PlayerParent;
 import entities.player.characters.Kholu;
 import entities.launchers.Cannon;
+
 import entities.collectables.Coin;
+import entities.collectables.Gem;
+import entities.collectables.parent.Collectable;
+
 import entities.terrain.Wall;
 import flixel.FlxState;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import flixel.tile.FlxTilemap;
 import systems.Hud;
 
+using flixel.util.FlxSpriteUtil;
 class PlayState extends FlxState
 {
 	private var player:Kholu;
@@ -28,7 +32,10 @@ class PlayState extends FlxState
 	private var graphicTiles:FlxTilemap;
 	private var solidTiles:FlxTypedGroup<Wall>;
 	private var cannons:FlxTypedGroup<Cannon>;
+	private var allCollectables:FlxTypedGroup<Collectable>;
 	private var coins:FlxTypedGroup<Coin>;
+	private var gems:FlxTypedGroup<Gem>;
+	
 
 	override public function create():Void
 	{
@@ -63,9 +70,9 @@ class PlayState extends FlxState
 			FlxG.overlap(player, solidTiles, player.onWallCollision, FlxObject.separateY);	
 		}
 
-		if (coins != null)
+		if (allCollectables != null)
 		{
-			FlxG.overlap(player, coins, onCoinOverlap);
+			FlxG.overlap(player, allCollectables, onCollectableOverlap);
 		}
 
 	}
@@ -99,13 +106,18 @@ class PlayState extends FlxState
 		// Get all entities
 		cannons = new FlxTypedGroup<Cannon>();
 		coins = new FlxTypedGroup<Coin>();
+		gems = new FlxTypedGroup<Gem>();
 		map.loadEntities(placeEntities, "entities");
 
 		// Add groups for building
+		allCollectables = new FlxTypedGroup<Collectable>();
+		addToCollectables([coins, gems]);
+		
+		add(allCollectables);
 		add(solidTiles);
 		add(graphicTiles);
 		add(cannons);
-		add(coins);
+		
 	}
 
 	function placeEntities(entity:EntityData)
@@ -118,15 +130,24 @@ class PlayState extends FlxState
 				cannons.add(new Cannon(entity.x, entity.y, entity.values.facing_direction));
 			case "coin":
 				coins.add(new Coin(entity.x, entity.y));
+			case "gem":
+				gems.add(new Gem(entity.x, entity.y));
 		}
 	}
 
-	public function onCoinOverlap(player:Player, coin:Coin)
+	function addToCollectables(uniqueCollectables:Array<FlxTypedGroup<Dynamic>>) 
 	{
-		if (player.alive && player.exists && coin.alive && coin.exists)
+		for (collectable in uniqueCollectables)
+			for (item in collectable)
+				allCollectables.add(item);
+	}
+
+	public function onCollectableOverlap(player:Player, collectable:Collectable)
+	{
+		if (player.alive && player.exists && collectable.alive && collectable.exists)
 		{
-			hud.updateHUD(coin.MAX_VALUE);
-			coin.kill();
+			hud.updateHUD(collectable.VALUE);
+			collectable.kill();
 		}
 	}
 
