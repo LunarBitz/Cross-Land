@@ -51,7 +51,7 @@ class Kholu extends Player
 		maxVelocity.y = TERMINAL_VELOCITY * 0.65;
 		scaleGravity(0.85, 0.65);
 		JUMP_SPEED = -350;
-		maxJumpCount = 2;
+		maxJumpCount = 1;
 		currentJumpCount = maxJumpCount;
 
 		// Set up graphics and animations
@@ -60,13 +60,6 @@ class Kholu extends Player
 		
 		offset.set(width, frameHeight - height);
 		centerOrigin();
-
-		/*
-		leftSensor = new PixelSensor(X, Y, -7, 24, this);
-		leftSensor._solids = _solidsRef;
-		rightSensor = new PixelSensor(X, Y, 18, 24, this);
-		rightSensor._solids = _solidsRef;
-		*/
 
 		gatherAnimations();
 		
@@ -79,21 +72,12 @@ class Kholu extends Player
 
 	override function update(elapsed:Float) 
 	{
-		/*
-			var p1:FlxPoint = leftSensor.pushDown(4);
-			var p2:FlxPoint = rightSensor.pushDown(4);
-			if (p1 != null && p2 != null)
-			{
-				trace(FlxAngle.angleBetween(leftSensor, rightSensor, true));
-			}
-		*/
-		
 		// Write variables to debug overlay
 		#if debug
 		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
 		DebugOverlay.watchValue("Jumps", currentJumpCount);
-		DebugOverlay.watchValue("Jump Buffer", jumpBufferTimer);
+		DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
 		DebugOverlay.watchValue("On Wall", onWall);
 		#end
 
@@ -167,6 +151,7 @@ class Kholu extends Player
 		playerAnimation.createAnimation("leaping", [161,162], 20, true);
 		playerAnimation.createAnimation("idle_walljumping", [163], 20, false);
 		playerAnimation.createAnimation("leaping_walljumping", [164], 20, false);
+		playerAnimation.createAnimationChain("walljumping", ["leaping_walljumping", "leaping_walljumping", "leaping", "jumping"], 20, true, 4);
 		playerAnimation.createAnimation("headspin_fast", [165,166], 20, true);
 		playerAnimation.createAnimation("damaged_backside", [167], 20, false);
 		playerAnimation.createAnimation("damaged_frontside", [168], 20, false);
@@ -190,4 +175,8 @@ class Kholu extends Player
 		playerAnimation.createAnimation("arm_swing_climbing_backward", [228,229,230,231], 20, false);
 	}
 
+	public function canIdleOnWall():Bool
+	{
+		return (onWall != 0 && velocity.y >= 0 && playerInput.isInputDown("up"));
+	}
 }

@@ -44,11 +44,6 @@ class Player extends FlxSprite
 	public var CROUCH_TARGET_SPEED(default, never):Float = 0;
 	public var UNCROUCH_TARGET_SPEED(default, never):Float = 5;
 	public var IN_AIR_TARGET_SPEED(default, never):Float = 200;
-	
-	/*
-	public var leftSensor:PixelSensor;
-	public var rightSensor:PixelSensor;
-	*/
 
 	public var xSpeed:Float = 0;
 	public var ySpeed:Float = 0;
@@ -57,8 +52,8 @@ class Player extends FlxSprite
 	public var JUMP_SPEED:Float = -350;
 	public var currentJumpCount:Int = 0;
 	public var maxJumpCount:Int = 3;
-	private var jumpBufferTimer:Int = 0;
-	private var jumpBufferFrames:Int = 8;
+	private var jumpBufferTimer:Float = 0;
+	private var jumpBufferFrames:Int = 150;
 
 	public var _solidsRef:Dynamic;
 
@@ -74,12 +69,6 @@ class Player extends FlxSprite
 		actionSystem = new ActionSystem(playerLogic.states.Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
-		/*
-		leftSensor = new PixelSensor(X, Y, -7, 24, this);
-		leftSensor._solids = _solidsRef;
-		rightSensor = new PixelSensor(X + width, Y, 7, 24, this);
-		rightSensor._solids = _solidsRef;
-		*/
 
 		gatherInputs();
 
@@ -261,17 +250,7 @@ class Player extends FlxSprite
 			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
 		}
 
-		jumpBufferTimer++; // Increase buffer
-	}
-
-	public function wallJump() 
-	{
-		if (playerInput.isInputDown("jump_just_pressed"))
-		{
-			setHorizontalMovement(175, -onWall, 1);
-			velocity.y = JUMP_SPEED;
-			actionSystem.setState(playerLogic.states.Jumping);
-		}	
+		jumpBufferTimer += FlxG.elapsed * 1000; // Increase buffer
 	}
 
 	/**
@@ -282,11 +261,18 @@ class Player extends FlxSprite
 	**/
 	public function setHorizontalMovement(target:Float, direction:Int = 1, interpRatio:Float):Void
 	{
+		// Player is not about to collide ahead so change xSpeed normally
 		if (!willCollide(target * direction, 0))
-			xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, target * direction, interpRatio), 2);
+			xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, target * direction, interpRatio), 3);
+		
+		// Player is about to collide ahead so change xSpeed to a minimal value (to keep isTouching working on walls)
 		else 
 			if (Math.abs(xSpeed) >= (target / 6))
-				xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, (target / 6) * direction, 1/16), 2);
+				xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, (target / 6) * direction, 1/16), 3);
+
+		// Just set xSpeed to 0 if it's becoming too small but not 0 (lerping fix)
+		if (FlxMath.equal(xSpeed, 0.0, 1))
+			xSpeed = 0;
 	}
 
 	/**
@@ -294,8 +280,11 @@ class Player extends FlxSprite
 	**/
 	public function updateVelocity():Void 
 	{
+		velocity.x = xSpeed;
+
+		#if debug
 		trace('xSpeed: ${xSpeed}');
-			velocity.x = xSpeed;
+		#end
 	}
 
 	/**
@@ -316,17 +305,18 @@ class Player extends FlxSprite
 	**/
 	public function onFloorCollision(player:Player, other:FlxSprite):Void
 	{
-		if (player.playerLogic.states != null)
+		var states = player.playerLogic.states;
+		if (states != null)
 		{
 			if ((player.isOnGround()) && 
 
 				(!player.actionSystem.isAnAction([
-					player.playerLogic.states.Normal, 
-					player.playerLogic.states.Crouching, 
-					player.playerLogic.states.Uncrouching]
+					states.Normal, 
+					states.Crouching, 
+					states.Uncrouching]
 				)))
 			{
-				player.actionSystem.setState(player.playerLogic.states.Normal);
+				player.actionSystem.setState(states.Normal);
 			}
 		}
 	}

@@ -15,13 +15,12 @@ enum PlayerStates
     Uncrouching;
     Sliding;
     Walljump_Idle;
-    walljumping;
+    Walljumping;
     KL;
 }
 
 class KholuStateLogics extends PlayerStateLogics
 {
-
     override public function new(obj:Player) 
     { 
         super(obj);
@@ -41,16 +40,14 @@ class KholuStateLogics extends PlayerStateLogics
 
         // horizontal Movement
         if (owner.playerAnimation.getCurrentAnimation() != "uncrouching")
-            owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+            owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO * 3);
 
         // Jump
         if (owner.playerInput.isInputDown("jump_just_pressed"))
             owner.actionSystem.setState(Jumping);
 
         if (!owner.isOnGround())
-        {
             owner.actionSystem.setState(Falling);
-        }
     
         // Crouch
         if (owner.playerInput.isInputDown("crouch"))
@@ -102,16 +99,13 @@ class KholuStateLogics extends PlayerStateLogics
 
         // Crouch
         if (owner.playerInput.isInputDown("crouch_released"))
-        {
             owner.actionSystem.setState(Uncrouching);
-        }
+
         // #endregion
 
         // #region Animations
         if (owner.actionSystem.hasChanged())
-        {
             owner.playerAnimation.setAnimation("crouching", false, false, true, 0, true);
-        }
         // #endregion
     }
 
@@ -153,7 +147,7 @@ class KholuStateLogics extends PlayerStateLogics
         
         owner.jump();
 
-        if (owner.onWall != 0 && owner.playerInput.isInputDown("up") && owner.velocity.y >= 0)
+        if (cast(owner, Kholu).canIdleOnWall())
             owner.actionSystem.setState(Walljump_Idle);
         // #endregion
 
@@ -174,6 +168,11 @@ class KholuStateLogics extends PlayerStateLogics
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+
+        owner.scaleGravity(0.85, 0.65);
+
+        if (cast(owner, Kholu).canIdleOnWall() && owner.actionSystem.getPreviousState() != Walljump_Idle)
+            owner.actionSystem.setState(Walljump_Idle);
         // #endregion
 
         // #region Animations
@@ -203,9 +202,21 @@ class KholuStateLogics extends PlayerStateLogics
         owner.facing = owner.onWall == -1? FlxObject.LEFT : FlxObject.RIGHT;
         owner.setHorizontalMovement(1, owner.onWall, 1.0);
         
+        // Vertical Movement
         owner.scaleGravity(0.1, 0.25);
 
-        owner.wallJump();
+        if (owner.onWall !=0 && owner.playerInput.getAxis("horizontalAxis") == -owner.onWall)
+        {
+            owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, -owner.onWall, 1);
+            owner.velocity.y = owner.JUMP_SPEED;
+            owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT;
+            owner.actionSystem.setState(Walljumping);
+        }
+        else if (owner.velocity.y >= 120 || !owner.playerInput.isInputDown("up"))
+        {
+            owner.actionSystem.setState(Falling);
+        }
+
         // #endregion
 
         // #region Animations
@@ -213,6 +224,32 @@ class KholuStateLogics extends PlayerStateLogics
             owner.playerAnimation.setAnimation("idle_walljumping");
         else 
             owner.playerAnimation.setAnimation("jump_fall");
+        // #endregion
+    }
+
+    public function _State_Walljumping() 
+    {
+        // #region Logic 
+        owner.canChangeDirections = false;
+
+        // Horizontal Movement
+        if (owner.onWall != 0) { owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; }
+        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED * 1.25, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+
+        // Vertical Movement
+        owner.scaleGravity(0.85, 0.65);
+
+        if (owner.velocity.y >=0)
+            owner.actionSystem.setState(Falling);
+
+        if (cast(owner, Kholu).canIdleOnWall())
+            owner.actionSystem.setState(Walljump_Idle);
+        // #endregion
+
+        // #region Animations
+        if (owner.actionSystem.hasChanged())
+            owner.playerAnimation.setAnimation("walljumping");
+            //owner.playerAnimation.setAnimation("leaping_walljumping");
         // #endregion
     }
 }
