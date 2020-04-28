@@ -299,8 +299,8 @@ class Player extends FlxSprite
 	{
 		if (player.playerLogic.states != null)
 		{
-				if ((player.isOnGround()) && 
-					(player.actionSystem.isAnAction([player.playerLogic.states.Jumping, player.playerLogic.states.Falling])))
+			if ((player.isOnGround()) && 
+				(player.actionSystem.isAnAction([player.playerLogic.states.Jumping, player.playerLogic.states.Falling])))
 			{
 				player.actionSystem.setState(player.playerLogic.states.Normal);
 			}

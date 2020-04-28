@@ -51,6 +51,7 @@ class Kholu extends Player
 		maxVelocity.y = TERMINAL_VELOCITY * 0.65;
 		JUMP_SPEED = -350;
 		maxJumpCount = 2;
+		currentJumpCount = maxJumpCount;
 
 		// Set up graphics and animations
 		loadGraphic(AssetPaths.sprKholu__png, true, 32, 32);

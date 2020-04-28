@@ -102,7 +102,7 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Animations
         if (owner.actionSystem.hasChanged())
         {
-            owner.playerAnimation.setAnimation("crouching", false, false, 0, true);
+            owner.playerAnimation.setAnimation("crouching", false, false, true, 0, true);
         }
         // #endregion
     }
