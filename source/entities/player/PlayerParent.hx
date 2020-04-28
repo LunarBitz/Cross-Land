@@ -35,10 +35,16 @@ class Player extends FlxSprite
 	public var canChangeDirections:Bool = false;
 	public var facingDirection:Int = 1;
 	public var grounded:Bool = false;
+	public var onWall:Int = 0;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
 	public var TERMINAL_VELOCITY(default, never):Float = 1500;
+	public var NORMAL_TARGET_SPEED(default, never):Float = 175;
+	public var CROUCH_TARGET_SPEED(default, never):Float = 0;
+	public var UNCROUCH_TARGET_SPEED(default, never):Float = 5;
+	public var IN_AIR_TARGET_SPEED(default, never):Float = 200;
+	
 	/*
 	public var leftSensor:PixelSensor;
 	public var rightSensor:PixelSensor;
@@ -102,7 +108,8 @@ class Player extends FlxSprite
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
 
-		grounded = this.isTouching(FlxObject.DOWN);
+		grounded = isTouching(FlxObject.DOWN);
+		onWall = (isTouching(FlxObject.RIGHT)? 1:0) - (isTouching(FlxObject.LEFT)? 1:0);
 		
 		// Update facing direction
 		updateDirection();
@@ -115,6 +122,12 @@ class Player extends FlxSprite
 
 		timePassed += elapsed;
 		super.update(elapsed);
+	}
+
+	public function scaleGravity(gravityScale:Float = 1, terminalScale:Float = 1) 
+	{
+		acceleration.y = GRAVITY * gravityScale;
+        maxVelocity.y = TERMINAL_VELOCITY * terminalScale;	
 	}
 
 	/**
@@ -248,7 +261,17 @@ class Player extends FlxSprite
 			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
 		}
 
-		++jumpBufferTimer; // Increase buffer
+		jumpBufferTimer++; // Increase buffer
+	}
+
+	public function wallJump() 
+	{
+		if (playerInput.isInputDown("jump_just_pressed"))
+		{
+			setHorizontalMovement(175, -onWall, 1);
+			velocity.y = JUMP_SPEED;
+			actionSystem.setState(playerLogic.states.Jumping);
+		}	
 	}
 
 	/**
@@ -257,12 +280,13 @@ class Player extends FlxSprite
 		@param target Desired speed in the x direction
 		@param interpRatio Ratio between 0 to 1 that determines how fast the player will reach `target`. 0 = Never, 1 = Instant, 0.01 to 0.99 = eventually
 	**/
-	public function setHorizontalMovement(target:Float, interpRatio:Float):Void
+	public function setHorizontalMovement(target:Float, direction:Int = 1, interpRatio:Float):Void
 	{
-		if (!willCollide(target * facingDirection, 0))
-            xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, target * facingDirection, interpRatio), 2);
-        else 
-            xSpeed = 0;
+		if (!willCollide(target * direction, 0))
+			xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, target * direction, interpRatio), 2);
+		else 
+			if (Math.abs(xSpeed) >= (target / 6))
+				xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, (target / 6) * direction, 1/16), 2);
 	}
 
 	/**
@@ -270,12 +294,7 @@ class Player extends FlxSprite
 	**/
 	public function updateVelocity():Void 
 	{
-		if (willCollide(xSpeed, 0))
-		{
-			xSpeed = 0;
-			velocity.x = 0;
-		}
-		else
+		trace('xSpeed: ${xSpeed}');
 			velocity.x = xSpeed;
 	}
 
@@ -295,16 +314,26 @@ class Player extends FlxSprite
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/
-	public function onWallCollision(player:Player, other:FlxSprite):Void
+	public function onFloorCollision(player:Player, other:FlxSprite):Void
 	{
 		if (player.playerLogic.states != null)
 		{
 			if ((player.isOnGround()) && 
-				(player.actionSystem.isAnAction([player.playerLogic.states.Jumping, player.playerLogic.states.Falling])))
+
+				(!player.actionSystem.isAnAction([
+					player.playerLogic.states.Normal, 
+					player.playerLogic.states.Crouching, 
+					player.playerLogic.states.Uncrouching]
+				)))
 			{
 				player.actionSystem.setState(player.playerLogic.states.Normal);
 			}
 		}
+	}
+
+	public function onWallCollision(player:Player, other:FlxSprite):Void
+	{
+		player.onWall = -player.facingDirection;
 	}
 
 	/**

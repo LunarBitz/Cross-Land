@@ -67,7 +67,7 @@ class PlayState extends FlxState
 			// Must handle x collisions before the y collisions or 
 			// else the player will get stuck in the seams of solid object sprites
 			FlxG.overlap(player, solidTiles, player.onWallCollision, FlxObject.separateX);
-			FlxG.overlap(player, solidTiles, player.onWallCollision, FlxObject.separateY);	
+			FlxG.overlap(player, solidTiles, player.onFloorCollision, FlxObject.separateY);	
 		}
 
 		if (allCollectables != null)

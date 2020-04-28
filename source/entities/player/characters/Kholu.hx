@@ -49,6 +49,7 @@ class Kholu extends Player
 		// Set up "gravity" (constant acceleration) and "terminal velocity" (max fall speed)
 		acceleration.y = GRAVITY * 0.85;
 		maxVelocity.y = TERMINAL_VELOCITY * 0.65;
+		scaleGravity(0.85, 0.65);
 		JUMP_SPEED = -350;
 		maxJumpCount = 2;
 		currentJumpCount = maxJumpCount;
@@ -93,6 +94,7 @@ class Kholu extends Player
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
 		DebugOverlay.watchValue("Jumps", currentJumpCount);
 		DebugOverlay.watchValue("Jump Buffer", jumpBufferTimer);
+		DebugOverlay.watchValue("On Wall", onWall);
 		#end
 
 		// We're updating from PlayerLogix.hx bois
@@ -108,6 +110,7 @@ class Kholu extends Player
 	{
 		playerInput.bindInput("left", [FlxKey.LEFT]);
 		playerInput.bindInput("right", [FlxKey.RIGHT]);
+		playerInput.bindInput("up", [FlxKey.UP]);
 		playerInput.bindInput("jump", [FlxKey.Z]);
 		playerInput.bindInput("crouch", [FlxKey.DOWN]);
 		playerInput.bindAxis("horizontalAxis", "left", "right");
