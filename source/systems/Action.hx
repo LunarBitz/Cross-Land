@@ -1,15 +1,11 @@
 package systems;
 
-// VERY dangerous attributes and paramters here. Something that will work for now
-// but definetly will try to avoid using dynamic variables so freely in the future. 
-// Will research other ways whenever possible. Only done so that this can be resued
-// With any object needed this system with different enumerators.
-
 class ActionSystem
 {
 	var previousState:Dynamic = null;
 	var currentState:Dynamic = null;
-	public var states:Dynamic = null;
+	public var delayTimer:Float = 0;
+	public var delayThreshold:Int = 0;
 
 	public function new(?defaultAction:Dynamic = null) 
 	{
@@ -31,10 +27,21 @@ class ActionSystem
 		@param newState Desired state to change to
 		@return Current state
 	**/
-	public function setState(newState:Dynamic):Dynamic
+	public function setState(newState:Dynamic, ?useDelay:Bool = false):Dynamic
 	{
-		previousState = currentState;
-		currentState = newState;
+		if (useDelay)
+		{
+			if (delayTimer >= delayThreshold)
+			{
+				previousState = currentState;
+				currentState = newState;
+			}
+		}
+		else
+		{
+			previousState = currentState;
+			currentState = newState;
+		}
 
 		return currentState;
 	}
@@ -72,6 +79,30 @@ class ActionSystem
 		}
 
 		return false;
+	}
+
+	/**
+		Update the delay threshold  for actions setting that utilizes it
+		@param milliseconds Max time for delayed triggering in milliseconds (1000 = 1 second)
+		@return New delay value
+	**/
+	public function setDelay(?milliseconds:Int = 0):Int
+	{
+		delayThreshold = Std.int(Math.max(0, milliseconds));
+		return delayThreshold;
+	}
+
+	/**
+		Update the delay threshold  for actions setting that utilizes it
+		@param dT Change value that increments `delayTimer`
+		@param condition Boolean that allows increments or resets (Set **True** to increment only)
+	**/
+	public function updateTimer(dT:Float, ?condition:Bool = false):Void
+	{
+		if (condition)
+			delayTimer += dT * 1000;
+		else 
+			delayTimer = 0;
 	}
     
 }

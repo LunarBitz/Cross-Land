@@ -1,5 +1,6 @@
 package;
 
+import entities.terrain.CloudSolid;
 import Debug.DebugOverlay;
 import flixel.util.FlxColor;
 import flixel.FlxObject;
@@ -14,7 +15,7 @@ import entities.collectables.Coin;
 import entities.collectables.Gem;
 import entities.collectables.parent.Collectable;
 
-import entities.terrain.Wall;
+import entities.terrain.Solid;
 import flixel.FlxState;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import flixel.tile.FlxTilemap;
@@ -26,27 +27,24 @@ class PlayState extends FlxState
 {
 	private var player:Kholu;
 	private var hud:GameHUD;
-	private var money:Int = 0;
 
-	private var map:FlxOgmo3Loader;
 	private var graphicTiles:FlxTilemap;
-	private var solidTiles:FlxTypedGroup<Wall>;
-	private var cannons:FlxTypedGroup<Cannon>;
+	private var solidTiles:FlxTypedGroup<Solid>;
+	private var jumpThroughTiles:FlxTypedGroup<CloudSolid>;
+
 	private var allCollectables:FlxTypedGroup<Collectable>;
 	private var coins:FlxTypedGroup<Coin>;
 	private var gems:FlxTypedGroup<Gem>;
+
+	private var cannons:FlxTypedGroup<Cannon>;
 	
 
 	override public function create():Void
 	{
 		player = new Kholu();
 		add(player);
-		/*
-		add(player.leftSensor);
-		add(player.rightSensor);
-		*/
 
-		FlxG.camera.follow(player, PLATFORMER, 1/16);
+		FlxG.camera.follow(player, PLATFORMER, 1/8);
 
 		initOgmo3Map(AssetPaths.CrossLandsMaps__ogmo, AssetPaths.dusk_timberland_zone_1__json);
 
@@ -62,37 +60,48 @@ class PlayState extends FlxState
 	{
 		super.update(elapsed);
 		
+		// Check for solid objects
 		if (solidTiles != null)
 		{
-			// Must handle x collisions before the y collisions or 
-			// else the player will get stuck in the seams of solid object sprites
-			FlxG.overlap(player, solidTiles, player.onWallCollision, FlxObject.separateX);
-			FlxG.overlap(player, solidTiles, player.onFloorCollision, FlxObject.separateY);	
+			// Handle x and y collisions seperately for specialized logic
+			FlxG.overlap(player, solidTiles, player.resolveWallCollision, FlxObject.separateX);
+			FlxG.overlap(player, solidTiles, player.resolveFloorCollision, FlxObject.separateY);	
 		}
 
+		// Check for jump through objects
+		if (jumpThroughTiles != null)
+		{
+			FlxG.collide(player, jumpThroughTiles, player.resolveFloorCollision);	
+		}
+
+		// Check for collectable objects
 		if (allCollectables != null)
 		{
-			FlxG.overlap(player, allCollectables, onCollectableOverlap);
+			FlxG.overlap(player, allCollectables, resolveCollectableOverlap);
 		}
 
 	}
 
 	private function initOgmo3Map(projectPath:String, projectJson:String):Void 
 	{
-		map = new FlxOgmo3Loader(projectPath, projectJson);	
+		var map = new FlxOgmo3Loader(projectPath, projectJson);	
+
+
 
 		// Get the solid objects for collission
 		var grid:Map<String, Array<flixel.math.FlxPoint>> = map.loadGridMap("collision");
-		solidTiles = new FlxTypedGroup<Wall>();
+		
+		solidTiles = new FlxTypedGroup<Solid>();
 		for (point in grid['1'])
-		{
-			solidTiles.add(new Wall(point.x, point.y, 16, 16));
-		}
+			solidTiles.add(new Solid(point.x, point.y, 16, 16));
+
+		jumpThroughTiles = new FlxTypedGroup<CloudSolid>();
+		for (point in grid['P'])
+			jumpThroughTiles.add(new CloudSolid(point.x, point.y, 16, 16));
+		
 		player._solidsRef = solidTiles;
-		/*
-		player.leftSensor._solids = solidTiles;
-		player.rightSensor._solids = solidTiles;
-		*/
+
+
 
 		// Get the graphical tilemaps
 		// Note: When creating a tileset in a sprite editor, ALWAYS leave the first tile 
@@ -100,8 +109,11 @@ class PlayState extends FlxState
 		// 		 trying to figure out why the tiles aren't rendering.
 		graphicTiles = map.loadTilemap(AssetPaths.tsGrasstop__png, "graphics");
 		graphicTiles.follow();
+
 		// Disable collision for tiles 1-4 since we already established a collision grid
 		graphicTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
+		
+
 		
 		// Get all entities
 		cannons = new FlxTypedGroup<Cannon>();
@@ -109,12 +121,15 @@ class PlayState extends FlxState
 		gems = new FlxTypedGroup<Gem>();
 		map.loadEntities(placeEntities, "entities");
 
+
+
 		// Add groups for building
 		allCollectables = new FlxTypedGroup<Collectable>();
 		addToCollectables([coins, gems]);
 		
 		add(allCollectables);
 		add(solidTiles);
+		add(jumpThroughTiles);
 		add(graphicTiles);
 		add(cannons);
 		
@@ -142,7 +157,7 @@ class PlayState extends FlxState
 				allCollectables.add(item);
 	}
 
-	public function onCollectableOverlap(player:Player, collectable:Collectable)
+	public function resolveCollectableOverlap(player:Player, collectable:Collectable)
 	{
 		if (player.alive && player.exists && collectable.alive && collectable.exists)
 		{

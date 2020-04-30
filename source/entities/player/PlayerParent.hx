@@ -54,6 +54,8 @@ class Player extends FlxSprite
 	public var maxJumpCount:Int = 3;
 	private var jumpBufferTimer:Float = 0;
 	private var jumpBufferFrames:Int = 150;
+	
+	
 
 	public var _solidsRef:Dynamic;
 
@@ -98,6 +100,9 @@ class Player extends FlxSprite
 		playerInput.poll();
 
 		grounded = isTouching(FlxObject.DOWN);
+
+		actionSystem.updateTimer(elapsed, !isOnGround());
+
 		onWall = (isTouching(FlxObject.RIGHT)? 1:0) - (isTouching(FlxObject.LEFT)? 1:0);
 		
 		// Update facing direction
@@ -113,7 +118,12 @@ class Player extends FlxSprite
 		super.update(elapsed);
 	}
 
-	public function scaleGravity(gravityScale:Float = 1, terminalScale:Float = 1) 
+	/**
+		Scale constants based on Y velocity
+		@param gravityScale Unit scale to change `acceleration.y` with
+		@param terminalScale Unit scale to change `maxVelocity.y` with
+	**/
+	public function scaleGravity(gravityScale:Float = 1, terminalScale:Float = 1):Void
 	{
 		acceleration.y = GRAVITY * gravityScale;
         maxVelocity.y = TERMINAL_VELOCITY * terminalScale;	
@@ -134,7 +144,7 @@ class Player extends FlxSprite
 	}
 
 	/**
-		Helper to add all animations of the player
+		Helper function to add all animations of the player
 	**/
 	private function gatherAnimations():Void 
 	{
@@ -170,9 +180,13 @@ class Player extends FlxSprite
 		return (Math.abs(axis) <= DEAD_ZONE)? 0 : FlxMath.signOf(axis);
 	}
 
+	/**
+		Change the facing direction of the player based on the input
+	**/
 	private function updateDirection():Void
 	{
 		facingDirection = getMoveDirectionCoefficient(playerInput.getAxis("horizontalAxis"));
+
 		if (facingDirection != 0 && canChangeDirections)
 			facing = (facingDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
 	}
@@ -283,7 +297,7 @@ class Player extends FlxSprite
 		velocity.x = xSpeed;
 
 		#if debug
-		trace('xSpeed: ${xSpeed}');
+		//trace('xSpeed: ${xSpeed}');
 		#end
 	}
 
@@ -299,17 +313,17 @@ class Player extends FlxSprite
 	}
 
 	/**
-		Function that's called to resolve collision overlaping with solid objects when invoked.
+		Function that's called to resolve floor related statements when object overlapping is invoked.
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/
-	public function onFloorCollision(player:Player, other:FlxSprite):Void
+	public function resolveFloorCollision(player:Player, other:FlxSprite):Void
 	{
 		var states = player.playerLogic.states;
 		if (states != null)
 		{
-			if ((player.isOnGround()) && 
-
+			if ((player.isOnGround()) 
+				&& 
 				(!player.actionSystem.isAnAction([
 					states.Normal, 
 					states.Crouching, 
@@ -321,13 +335,18 @@ class Player extends FlxSprite
 		}
 	}
 
-	public function onWallCollision(player:Player, other:FlxSprite):Void
+	/**
+		Function that's called to resolve wall related statements when object overlapping is invoked.
+		@param player Object that collided with something.
+		@param other Object that `player` has collided with.
+	**/
+	public function resolveWallCollision(player:Player, other:FlxSprite):Void
 	{
 		player.onWall = -player.facingDirection;
 	}
 
 	/**
-		Function that's called to resolve collision overlaping with damage inducing objects when invoked.
+		Function that's called to resolve damage related statements when object overlapping is invoked.
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/

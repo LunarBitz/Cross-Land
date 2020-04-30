@@ -41,14 +41,13 @@ class Kholu extends Player
 		// Set up the needed custom systems
 		playerLogic = new KholuStateLogics(this);
 		actionSystem = new ActionSystem(Normal);
+		actionSystem.setDelay(50);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
 
 		gatherInputs();
 
 		// Set up "gravity" (constant acceleration) and "terminal velocity" (max fall speed)
-		acceleration.y = GRAVITY * 0.85;
-		maxVelocity.y = TERMINAL_VELOCITY * 0.65;
 		scaleGravity(0.85, 0.65);
 		JUMP_SPEED = -350;
 		maxJumpCount = 1;
@@ -67,7 +66,7 @@ class Kholu extends Player
 		setFacingFlip(FlxObject.RIGHT, false, false);
 
 		grounded = false;
-		playerAnimation.setAnimation("idle_normal");
+		//playerAnimation.setAnimation("idle_normal");
 	}
 
 	override function update(elapsed:Float) 
@@ -79,6 +78,7 @@ class Kholu extends Player
 		DebugOverlay.watchValue("Jumps", currentJumpCount);
 		DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
 		DebugOverlay.watchValue("On Wall", onWall);
+		DebugOverlay.watchValue("Action Buffer", Std.int(actionSystem.delayTimer));
 		#end
 
 		// We're updating from PlayerLogix.hx bois
@@ -175,6 +175,10 @@ class Kholu extends Player
 		playerAnimation.createAnimation("arm_swing_climbing_backward", [228,229,230,231], 20, false);
 	}
 
+	/**
+		Returns if the player is allowed to idle on the wall
+		@return Returns **True** if off of the ground, actively pushing towards a wall, and holding up
+	**/
 	public function canIdleOnWall():Bool
 	{
 		return (onWall != 0 && velocity.y >= 0 && playerInput.isInputDown("up"));

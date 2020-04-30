@@ -1,5 +1,6 @@
 package entities.player.characters;
 
+import flixel.FlxG;
 import flixel.FlxObject;
 import entities.player.PlayerParent;
 import entities.player.PlayerLogic;
@@ -33,22 +34,29 @@ class KholuStateLogics extends PlayerStateLogics
     
     override public function _State_Normal() 
     {
-        // #region Logic
+        // #region Basics
+        // Facing Direction
         owner.canChangeDirections = true;
 
-        owner.scaleGravity(0.85, 0.65);
-
-        // horizontal Movement
+        // Horizontal Movement
         if (owner.playerAnimation.getCurrentAnimation() != "uncrouching")
             owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO * 3);
 
+        // Vertical Movement
+        owner.scaleGravity(0.85, 0.65);
+        // #endregion  
+
+        // #region Logic
         // Jump
         if (owner.playerInput.isInputDown("jump_just_pressed"))
             owner.actionSystem.setState(Jumping);
 
+        // Falling
         if (!owner.isOnGround())
-            owner.actionSystem.setState(Falling);
-    
+        {
+            owner.actionSystem.setState(Falling, true);
+        }
+            
         // Crouch
         if (owner.playerInput.isInputDown("crouch"))
             owner.actionSystem.setState(Crouching);
@@ -60,6 +68,7 @@ class KholuStateLogics extends PlayerStateLogics
             if (owner.playerAnimation.isAnAnimation(["idle_normal", "walking", "running", "sprinting"]))
             {
                 var xX = Math.floor(Math.abs(owner.velocity.x));
+
                 if (xX <= 3)
                     owner.playerAnimation.setAnimation("idle_normal");
                 else if (xX > 3 && xX <= 60)
@@ -91,16 +100,18 @@ class KholuStateLogics extends PlayerStateLogics
 
     override public function _State_Crouching() 
     {
-        // #region Logic
+        // #region Basics
+        // Facing Direction
         owner.canChangeDirections = false;
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.CROUCH_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO * 4);
+        // #endregion
 
+        // #region Logic
         // Crouch
         if (owner.playerInput.isInputDown("crouch_released"))
             owner.actionSystem.setState(Uncrouching);
-
         // #endregion
 
         // #region Animations
@@ -113,22 +124,28 @@ class KholuStateLogics extends PlayerStateLogics
 
     public function _State_Uncrouching() 
     {
-        // #region Logic
+        // #region Basics
+        // Facing Direction
         owner.canChangeDirections = false;
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.UNCROUCH_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO / 2);
+
+        // Vertical Movement
+        owner.scaleGravity(0.85, 0.65);
+        // #endregion
+
+        // #region Logic
+        if (owner.playerAnimation.isOnLastFrame() && owner.playerAnimation.isAnAnimation(["uncrouching"]))
+        {
+            owner.actionSystem.setState(Normal);
+        }
         // #endregion
 
         // #region Animations
         if (owner.actionSystem.hasChanged())
         {
             owner.playerAnimation.setAnimation("uncrouching");
-        }
-
-        if (owner.playerAnimation.isOnLastFrame())
-        {
-            owner.actionSystem.setState(Normal);
         }
         // #endregion
     }
@@ -137,14 +154,19 @@ class KholuStateLogics extends PlayerStateLogics
 
     override public function _State_Jumping() 
     {
-        // #region Logic 
+        // #region Basics 
+        // Facing Direction
         owner.canChangeDirections = true;
-
-        owner.scaleGravity(0.85, 0.65);
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
-        
+
+        // Vertical Movement
+        owner.scaleGravity(0.85, 0.65);
+        // #endregion
+
+        // #region Logic 
+        // Jumping
         owner.jump();
 
         if (cast(owner, Kholu).canIdleOnWall())
@@ -163,14 +185,18 @@ class KholuStateLogics extends PlayerStateLogics
 
     public function _State_Falling() 
     {
-        // #region Logic 
+        // #region Basics 
+        // Facing Direction
         owner.canChangeDirections = true;
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
 
+        // Vertical Movement
         owner.scaleGravity(0.85, 0.65);
+        // #endregion
 
+        // #region Logic 
         if (cast(owner, Kholu).canIdleOnWall() && owner.actionSystem.getPreviousState() != Walljump_Idle)
             owner.actionSystem.setState(Walljump_Idle);
         // #endregion
@@ -185,7 +211,13 @@ class KholuStateLogics extends PlayerStateLogics
     
     override public function _State_Sliding() 
     {
+        // #region Basics 
+        // Facing Direction
         owner.canChangeDirections = false;
+        // #endregion
+
+        // #region Logic
+        // #endregion
 
         // #region Animations
         if (owner.actionSystem.hasChanged())
@@ -193,18 +225,23 @@ class KholuStateLogics extends PlayerStateLogics
         // #endregion
     }
 
+
+
     public function _State_Walljump_Idle() 
     {
-        // #region Logic 
+        // #region Basics 
+        // Facing Direction
         owner.canChangeDirections = false;
+        owner.facing = owner.onWall == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on onWall only
 
         // Horizontal movement
-        owner.facing = owner.onWall == -1? FlxObject.LEFT : FlxObject.RIGHT;
         owner.setHorizontalMovement(1, owner.onWall, 1.0);
         
         // Vertical Movement
         owner.scaleGravity(0.1, 0.25);
+        // #endregion
 
+        // #region Logic 
         if (owner.onWall !=0 && owner.playerInput.getAxis("horizontalAxis") == -owner.onWall)
         {
             owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, -owner.onWall, 1);
@@ -216,7 +253,6 @@ class KholuStateLogics extends PlayerStateLogics
         {
             owner.actionSystem.setState(Falling);
         }
-
         // #endregion
 
         // #region Animations
@@ -227,19 +263,25 @@ class KholuStateLogics extends PlayerStateLogics
         // #endregion
     }
 
+
+
     public function _State_Walljumping() 
     {
-        // #region Logic 
+        // #region Basics 
+        // Facing Direction
         owner.canChangeDirections = false;
+        if (owner.onWall != 0) 
+            owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on xSpeed only
 
         // Horizontal Movement
-        if (owner.onWall != 0) { owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; }
         owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED * 1.25, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
 
         // Vertical Movement
         owner.scaleGravity(0.85, 0.65);
+        // #endregion
 
-        if (owner.velocity.y >=0)
+        // #region Logic 
+        if (owner.velocity.y >= 0)
             owner.actionSystem.setState(Falling);
 
         if (cast(owner, Kholu).canIdleOnWall())
@@ -249,7 +291,6 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Animations
         if (owner.actionSystem.hasChanged())
             owner.playerAnimation.setAnimation("walljumping");
-            //owner.playerAnimation.setAnimation("leaping_walljumping");
         // #endregion
     }
 }
