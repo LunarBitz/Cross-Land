@@ -1,5 +1,6 @@
 package entities.player;
 
+import hazards.parents.Damager;
 import systems.PixelSensor;
 import flixel.util.FlxColor;
 import flixel.FlxBasic;
@@ -36,6 +37,7 @@ class Player extends FlxSprite
 	public var facingDirection:Int = 1;
 	public var grounded:Bool = false;
 	public var onWall:Int = 0;
+	public var invincibilityTimer:Int = 0;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
@@ -107,6 +109,8 @@ class Player extends FlxSprite
 		
 		// Update facing direction
 		updateDirection();
+
+		tickInvincibilityTimer();
 
 		// Call the main logic states of the player
 		callStates();
@@ -207,7 +211,7 @@ class Player extends FlxSprite
 	public inline function canJump() 
 	{
 		return  (isOnGround() || (currentJumpCount < maxJumpCount)) &&
-				(!actionSystem.isAnAction([Crouching, Uncrouching]));
+				(!actionSystem.isAnAction([Crouching, Uncrouching, Damaged]));
 	}
 
 	/**
@@ -302,6 +306,20 @@ class Player extends FlxSprite
 	}
 
 	/**
+		Function that updates the actual velocity of the player
+	**/
+	public function tickInvincibilityTimer():Void 
+	{
+		if (invincibilityTimer > 0)
+		{
+			invincibilityTimer -= Std.int(FlxG.elapsed * 1000);
+		}
+
+		if (FlxMath.equal(invincibilityTimer, 0.0, 1) || invincibilityTimer < 0)
+			invincibilityTimer = 0;
+	}
+
+	/**
 		Checks ahead to see if the player will collide if continuing with the desired velocity
 		@param xVelocity Velocity in X direction to check future position with
 		@param yVelocity Velocity in Y direction to check future position with
@@ -350,19 +368,23 @@ class Player extends FlxSprite
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/
-	public function onDamageCollision(player:FlxSprite, other:FlxSprite):Void
+	public function resolveDamagerCollision(player:Player, other:Damager):Void
 	{
-		// We ONLY do a pixel perfect check if the object in question has collided with our simplified hitbox.
-		//
-		// Checking perfectly since we have a character that can crouch
-		// WAY easier than calculating and updating the hitbox. 
-		// It really is, since HaxeFlixel doesn't do a good job scaling with the set origin
-		//	which was resulting in glitchy floor detection
-		if (FlxG.pixelPerfectOverlap(player, other))
-		{
-			trace("We have really collided with the object");
+		var states = player.playerLogic.states;
+		var dir = (facing == FlxObject.LEFT)? -1 : 1;
 
-			other.kill();
+		if (player.alive && player.exists && other.alive && other.exists)
+		{
+			if (player.invincibilityTimer == 0)
+			{
+				player.invincibilityTimer = 1500;
+
+				player.health -= other.damgeValue;
+				player.setHorizontalMovement(player.IN_AIR_TARGET_SPEED, -dir, 1);
+				player.velocity.y = player.JUMP_SPEED / 3;
+				
+				player.actionSystem.setState(states.Damaged);
+			}
 		}
 	}
 

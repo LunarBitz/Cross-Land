@@ -9,6 +9,7 @@ enum PlayerStates
 	Normal;
     Jumping;
     Falling;
+    Damaged;
     Crouching;
     Uncrouching;
     PL;
@@ -32,4 +33,6 @@ class PlayerStateLogics
     public function _State_Jumping() {}
 
     public function _State_Sliding() {}
+
+    public function _State_Damaged() {}
 }

@@ -15,6 +15,9 @@ import entities.collectables.Coin;
 import entities.collectables.Gem;
 import entities.collectables.parent.Collectable;
 
+import hazards.parents.Enemy;
+import hazards.parents.Damager;
+
 import entities.terrain.Solid;
 import flixel.FlxState;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
@@ -35,6 +38,9 @@ class PlayState extends FlxState
 	private var allCollectables:FlxTypedGroup<Collectable>;
 	private var coins:FlxTypedGroup<Coin>;
 	private var gems:FlxTypedGroup<Gem>;
+
+	private var enemies:FlxTypedGroup<Enemy>;
+	private var allDamagers:FlxTypedGroup<Damager>;
 
 	private var cannons:FlxTypedGroup<Cannon>;
 	
@@ -73,6 +79,12 @@ class PlayState extends FlxState
 		{
 			FlxG.collide(player, jumpThroughTiles, player.resolveFloorCollision);	
 		}
+
+		if (allDamagers != null)
+		{
+			FlxG.overlap(player, allDamagers, player.resolveDamagerCollision);
+		}
+
 
 		// Check for collectable objects
 		if (allCollectables != null)
@@ -119,19 +131,24 @@ class PlayState extends FlxState
 		cannons = new FlxTypedGroup<Cannon>();
 		coins = new FlxTypedGroup<Coin>();
 		gems = new FlxTypedGroup<Gem>();
+
+		enemies = new FlxTypedGroup<Enemy>();
 		map.loadEntities(placeEntities, "entities");
 
 
 
 		// Add groups for building
 		allCollectables = new FlxTypedGroup<Collectable>();
-		addToCollectables([coins, gems]);
+		allDamagers = new FlxTypedGroup<Damager>();
+		combineGroups(allCollectables, [coins, gems]);
+		combineGroups(allDamagers, [enemies]);
 		
 		add(allCollectables);
 		add(solidTiles);
 		add(jumpThroughTiles);
 		add(graphicTiles);
 		add(cannons);
+		add(allDamagers);
 		
 	}
 
@@ -147,14 +164,16 @@ class PlayState extends FlxState
 				coins.add(new Coin(entity.x, entity.y));
 			case "gem":
 				gems.add(new Gem(entity.x, entity.y));
+			case "enemy":
+				enemies.add(new Enemy(entity.x, entity.y, 16, 16, player));
 		}
 	}
 
-	function addToCollectables(uniqueCollectables:Array<FlxTypedGroup<Dynamic>>) 
+	function combineGroups(master:FlxTypedGroup<Dynamic>, groups:Array<FlxTypedGroup<Dynamic>>) 
 	{
-		for (collectable in uniqueCollectables)
-			for (item in collectable)
-				allCollectables.add(item);
+		for (subGroup in groups)
+			for (item in subGroup)
+				master.add(item);
 	}
 
 	public function resolveCollectableOverlap(player:Player, collectable:Collectable)

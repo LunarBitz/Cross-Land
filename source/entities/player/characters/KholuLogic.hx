@@ -15,8 +15,10 @@ enum PlayerStates
     Crouching;
     Uncrouching;
     Sliding;
+    Damaged;
     Walljump_Idle;
     Walljumping;
+    Hurt;
     KL;
 }
 
@@ -92,6 +94,7 @@ class KholuStateLogics extends PlayerStateLogics
             owner.playerAnimation.transition("jumping", "idle_normal");
             owner.playerAnimation.transition("jump_fall", "idle_normal");
             owner.playerAnimation.transition("idle_walljumping", "idle_normal");
+            owner.playerAnimation.transition("damaged_frontside", "idle_normal");
         }
         // #endregion
     }
@@ -291,6 +294,32 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Animations
         if (owner.actionSystem.hasChanged())
             owner.playerAnimation.setAnimation("walljumping");
+        // #endregion
+    }
+
+
+
+    override public function _State_Damaged() 
+    {
+        // #region Basics 
+        // Facing Direction
+        owner.canChangeDirections = false;
+        owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on xSpeed only
+
+        // Horizontal Movement
+        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED * 0.75, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+
+        // Vertical Movement
+        owner.scaleGravity(0.85, 0.65);
+        // #endregion
+
+        // #region Logic 
+
+        // #endregion
+
+        // #region Animations
+        if (owner.actionSystem.hasChanged())
+            owner.playerAnimation.setAnimation("damaged_frontside", false, false, true, 0, true);
         // #endregion
     }
 }

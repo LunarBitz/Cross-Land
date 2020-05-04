@@ -53,6 +53,8 @@ class Kholu extends Player
 		maxJumpCount = 1;
 		currentJumpCount = maxJumpCount;
 
+		health = 100;
+
 		// Set up graphics and animations
 		loadGraphic(AssetPaths.sprKholu__png, true, 32, 32);
 		setSize(frameWidth / 3, frameHeight - 4);
@@ -75,10 +77,12 @@ class Kholu extends Player
 		#if debug
 		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
-		DebugOverlay.watchValue("Jumps", currentJumpCount);
-		DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
-		DebugOverlay.watchValue("On Wall", onWall);
-		DebugOverlay.watchValue("Action Buffer", Std.int(actionSystem.delayTimer));
+		//DebugOverlay.watchValue("Jumps", currentJumpCount);
+		//DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
+		//DebugOverlay.watchValue("On Wall", onWall);
+		//DebugOverlay.watchValue("Action Buffer", Std.int(actionSystem.delayTimer));
+		DebugOverlay.watchValue("Player Health", Std.int(health));
+		DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));
 		#end
 
 		// We're updating from PlayerLogix.hx bois
