@@ -34,7 +34,6 @@ class EnemyStateLogic
         {
             owner.actionSystem.setState(Detected);
         }
-        
     }
 
     public function _State_Detected() 

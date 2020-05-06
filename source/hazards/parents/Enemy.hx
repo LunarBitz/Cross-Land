@@ -2,7 +2,6 @@ package hazards.parents;
 
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
-import flixel.math.FlxPoint;
 import systems.Action.ActionSystem;
 import hazards.parents.EnemyLogic;
 import systems.ExtendedAnimation;
@@ -12,6 +11,8 @@ class Enemy extends Damager
     public var enemyLogic:EnemyStateLogic;
     public var actionSystem:ActionSystem;
     public var enemyAnimation:ExtAnimationSystem;
+
+    public var enemyReach:Float = 175; 
     public var target:FlxSprite;
     
     override public function new(?X:Float = 0, ?Y:Float = 0, ?Width:Int = 1, ?Height:Int = 1, ?initialTarget:FlxSprite) 
