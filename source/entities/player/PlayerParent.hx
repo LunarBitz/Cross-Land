@@ -1,5 +1,6 @@
 package entities.player;
 
+import hazards.parents.Damager;
 import systems.PixelSensor;
 import flixel.util.FlxColor;
 import flixel.FlxBasic;
@@ -35,14 +36,16 @@ class Player extends FlxSprite
 	public var canChangeDirections:Bool = false;
 	public var facingDirection:Int = 1;
 	public var grounded:Bool = false;
+	public var onWall:Int = 0;
+	public var invincibilityTimer:Int = 0;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
 	public var TERMINAL_VELOCITY(default, never):Float = 1500;
-	/*
-	public var leftSensor:PixelSensor;
-	public var rightSensor:PixelSensor;
-	*/
+	public var NORMAL_TARGET_SPEED(default, never):Float = 175;
+	public var CROUCH_TARGET_SPEED(default, never):Float = 0;
+	public var UNCROUCH_TARGET_SPEED(default, never):Float = 5;
+	public var IN_AIR_TARGET_SPEED(default, never):Float = 200;
 
 	public var xSpeed:Float = 0;
 	public var ySpeed:Float = 0;
@@ -51,7 +54,10 @@ class Player extends FlxSprite
 	public var JUMP_SPEED:Float = -350;
 	public var currentJumpCount:Int = 0;
 	public var maxJumpCount:Int = 3;
-	private var _jumping:Bool = false;
+	private var jumpBufferTimer:Float = 0;
+	private var jumpBufferFrames:Int = 150;
+	
+	
 
 	public var _solidsRef:Dynamic;
 
@@ -67,12 +73,6 @@ class Player extends FlxSprite
 		actionSystem = new ActionSystem(playerLogic.states.Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
-		/*
-		leftSensor = new PixelSensor(X, Y, -7, 24, this);
-		leftSensor._solids = _solidsRef;
-		rightSensor = new PixelSensor(X + width, Y, 7, 24, this);
-		rightSensor._solids = _solidsRef;
-		*/
 
 		gatherInputs();
 
@@ -101,10 +101,16 @@ class Player extends FlxSprite
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
 
-		grounded = this.isTouching(FlxObject.DOWN);
+		grounded = isTouching(FlxObject.DOWN);
+
+		actionSystem.updateTimer(elapsed, !isOnGround());
+
+		onWall = (isTouching(FlxObject.RIGHT)? 1:0) - (isTouching(FlxObject.LEFT)? 1:0);
 		
 		// Update facing direction
 		updateDirection();
+
+		tickInvincibilityTimer();
 
 		// Call the main logic states of the player
 		callStates();
@@ -114,6 +120,17 @@ class Player extends FlxSprite
 
 		timePassed += elapsed;
 		super.update(elapsed);
+	}
+
+	/**
+		Scale constants based on Y velocity
+		@param gravityScale Unit scale to change `acceleration.y` with
+		@param terminalScale Unit scale to change `maxVelocity.y` with
+	**/
+	public function scaleGravity(gravityScale:Float = 1, terminalScale:Float = 1):Void
+	{
+		acceleration.y = GRAVITY * gravityScale;
+        maxVelocity.y = TERMINAL_VELOCITY * terminalScale;	
 	}
 
 	/**
@@ -131,7 +148,7 @@ class Player extends FlxSprite
 	}
 
 	/**
-		Helper to add all animations of the player
+		Helper function to add all animations of the player
 	**/
 	private function gatherAnimations():Void 
 	{
@@ -167,9 +184,13 @@ class Player extends FlxSprite
 		return (Math.abs(axis) <= DEAD_ZONE)? 0 : FlxMath.signOf(axis);
 	}
 
+	/**
+		Change the facing direction of the player based on the input
+	**/
 	private function updateDirection():Void
 	{
 		facingDirection = getMoveDirectionCoefficient(playerInput.getAxis("horizontalAxis"));
+
 		if (facingDirection != 0 && canChangeDirections)
 			facing = (facingDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
 	}
@@ -190,36 +211,53 @@ class Player extends FlxSprite
 	public inline function canJump() 
 	{
 		return  (isOnGround() || (currentJumpCount < maxJumpCount)) &&
-				(!actionSystem.isAnAction([Crouching, Uncrouching]));
+				(!actionSystem.isAnAction([Crouching, Uncrouching, Damaged]));
 	}
 
 	/**
-		Function for handling variable height, multi-jumping.
-		Should be called in Update, not a single frame event
+		Function for handling variable height, multi-buffer-jumping.
+		Should be called in Update, not a single frame event. 
+		Single frame handling is done within
 	**/
 	public function jump():Void 
 	{
 		// Reset jump count if grounded and strip one jump if off the ground
 		if (isOnGround())
 		{
-			#if debug
-			trace('Jump() || Jump Count Reseted!');
-			#end
 			currentJumpCount = maxJumpCount;
+
+			// Follow through with jump if jump buffer is within frames
+			if (jumpBufferTimer < jumpBufferFrames)
+			{
+				currentJumpCount--;
+				velocity.y = JUMP_SPEED;
+				jumpBufferTimer = jumpBufferFrames;
+
+				#if debug
+				trace('Jump() || Buffer Jumping - Time:${timePassed}');
+				#end
+			}
 		}
 		else 
 		{
 			if (currentJumpCount == maxJumpCount) { currentJumpCount--; }
 		}
 
-		// Allow a single burst of force
-		if (playerInput.isInputDown("jump_just_pressed") && currentJumpCount > 0)
+		if (playerInput.isInputDown("jump_just_pressed"))
 		{
-			#if debug
-			trace('Jump() || Pressed Jump - Time:${timePassed}');
-			#end
-			currentJumpCount--;
-			velocity.y = JUMP_SPEED;
+			// Reset jump buffer for next jump (including floor jumping)
+			jumpBufferTimer = 0;
+
+			// Only jump if the player has jumps left
+			if (currentJumpCount > 0)
+			{
+				currentJumpCount--;
+				velocity.y = JUMP_SPEED;
+
+				#if debug
+				trace('Jump() || Pressed Jump - Time:${timePassed}');
+				#end
+			}	
 		}
 
 		// Allow for variable height jumping
@@ -229,6 +267,8 @@ class Player extends FlxSprite
 		{
 			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
 		}
+
+		jumpBufferTimer += FlxG.elapsed * 1000; // Increase buffer
 	}
 
 	/**
@@ -237,12 +277,20 @@ class Player extends FlxSprite
 		@param target Desired speed in the x direction
 		@param interpRatio Ratio between 0 to 1 that determines how fast the player will reach `target`. 0 = Never, 1 = Instant, 0.01 to 0.99 = eventually
 	**/
-	public function setHorizontalMovement(target:Float, interpRatio:Float):Void
+	public function setHorizontalMovement(target:Float, direction:Int = 1, interpRatio:Float):Void
 	{
-		if (!willCollide(target * facingDirection, 0))
-            xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, target * facingDirection, interpRatio), 2);
-        else 
-            xSpeed = 0;
+		// Player is not about to collide ahead so change xSpeed normally
+		if (!willCollide(target * direction, 0))
+			xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, target * direction, interpRatio), 3);
+		
+		// Player is about to collide ahead so change xSpeed to a minimal value (to keep isTouching working on walls)
+		else 
+			if (Math.abs(xSpeed) >= (target / 6))
+				xSpeed = FlxMath.roundDecimal(FlxMath.lerp(xSpeed, (target / 6) * direction, 1/16), 3);
+
+		// Just set xSpeed to 0 if it's becoming too small but not 0 (lerping fix)
+		if (FlxMath.equal(xSpeed, 0.0, 1))
+			xSpeed = 0;
 	}
 
 	/**
@@ -250,13 +298,25 @@ class Player extends FlxSprite
 	**/
 	public function updateVelocity():Void 
 	{
-		if (willCollide(xSpeed, 0))
+		velocity.x = xSpeed;
+
+		#if debug
+		//trace('xSpeed: ${xSpeed}');
+		#end
+	}
+
+	/**
+		Function that updates the actual velocity of the player
+	**/
+	public function tickInvincibilityTimer():Void 
+	{
+		if (invincibilityTimer > 0)
 		{
-			xSpeed = 0;
-			velocity.x = 0;
+			invincibilityTimer -= Std.int(FlxG.elapsed * 1000);
 		}
-		else
-			velocity.x = xSpeed;
+
+		if (FlxMath.equal(invincibilityTimer, 0.0, 1) || invincibilityTimer < 0)
+			invincibilityTimer = 0;
 	}
 
 	/**
@@ -271,40 +331,60 @@ class Player extends FlxSprite
 	}
 
 	/**
-		Function that's called to resolve collision overlaping with solid objects when invoked.
+		Function that's called to resolve floor related statements when object overlapping is invoked.
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/
-	public function onWallCollision(player:Player, other:FlxSprite):Void
+	public function resolveFloorCollision(player:Player, other:FlxSprite):Void
 	{
-		if (player.playerLogic.states != null)
+		var states = player.playerLogic.states;
+		if (states != null)
 		{
-				if ((player.isOnGround()) && 
-					(player.actionSystem.isAnAction([player.playerLogic.states.Jumping, player.playerLogic.states.Falling])))
+			if ((player.isOnGround()) 
+				&& 
+				(!player.actionSystem.isAnAction([
+					states.Normal, 
+					states.Crouching, 
+					states.Uncrouching]
+				)))
 			{
-				player.actionSystem.setState(player.playerLogic.states.Normal);
+				player.actionSystem.setState(states.Normal);
 			}
 		}
 	}
 
 	/**
-		Function that's called to resolve collision overlaping with damage inducing objects when invoked.
+		Function that's called to resolve wall related statements when object overlapping is invoked.
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/
-	public function onDamageCollision(player:FlxSprite, other:FlxSprite):Void
+	public function resolveWallCollision(player:Player, other:FlxSprite):Void
 	{
-		// We ONLY do a pixel perfect check if the object in question has collided with our simplified hitbox.
-		//
-		// Checking perfectly since we have a character that can crouch
-		// WAY easier than calculating and updating the hitbox. 
-		// It really is, since HaxeFlixel doesn't do a good job scaling with the set origin
-		//	which was resulting in glitchy floor detection
-		if (FlxG.pixelPerfectOverlap(player, other))
-		{
-			trace("We have really collided with the object");
+		player.onWall = -player.facingDirection;
+	}
 
-			other.kill();
+	/**
+		Function that's called to resolve damage related statements when object overlapping is invoked.
+		@param player Object that collided with something.
+		@param other Object that `player` has collided with.
+	**/
+	public function resolveDamagerCollision(player:Player, other:Damager):Void
+	{
+		var states = player.playerLogic.states;
+		var dir = (facing == FlxObject.LEFT)? -1 : 1;
+
+		if (player.alive && player.exists && other.alive && other.exists)
+		{
+			if (player.invincibilityTimer == 0)
+			{
+				player.invincibilityTimer = 1500;
+
+				player.health -= other.damgeValue;
+				player.setHorizontalMovement(player.IN_AIR_TARGET_SPEED, -dir, 1);
+				player.velocity.y = player.JUMP_SPEED / 3;
+				
+				player.actionSystem.setState(states.Damaged);
+			}
 		}
 	}
 

@@ -41,28 +41,26 @@ class Kholu extends Player
 		// Set up the needed custom systems
 		playerLogic = new KholuStateLogics(this);
 		actionSystem = new ActionSystem(Normal);
+		actionSystem.setDelay(50);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
 
 		gatherInputs();
 
 		// Set up "gravity" (constant acceleration) and "terminal velocity" (max fall speed)
-		acceleration.y = GRAVITY * 0.9;
-		maxVelocity.y = TERMINAL_VELOCITY * 0.75;
-		JUMP_SPEED = -375;
-		maxJumpCount = 4;
+		scaleGravity(0.85, 0.65);
+		JUMP_SPEED = -350;
+		maxJumpCount = 1;
+		currentJumpCount = maxJumpCount;
+
+		health = 100;
 
 		// Set up graphics and animations
 		loadGraphic(AssetPaths.sprKholu__png, true, 32, 32);
-		setSize(frameWidth / 2, frameHeight - 4);
-		offset.set(width / 2, frameHeight - height);
-
-		/*
-		leftSensor = new PixelSensor(X, Y, -7, 24, this);
-		leftSensor._solids = _solidsRef;
-		rightSensor = new PixelSensor(X, Y, 18, 24, this);
-		rightSensor._solids = _solidsRef;
-		*/
+		setSize(frameWidth / 3, frameHeight - 4);
+		
+		offset.set(width, frameHeight - height);
+		centerOrigin();
 
 		gatherAnimations();
 		
@@ -70,24 +68,21 @@ class Kholu extends Player
 		setFacingFlip(FlxObject.RIGHT, false, false);
 
 		grounded = false;
-		playerAnimation.setAnimation("idle_normal");
+		//playerAnimation.setAnimation("idle_normal");
 	}
 
 	override function update(elapsed:Float) 
 	{
-		/*
-			var p1:FlxPoint = leftSensor.pushDown(4);
-			var p2:FlxPoint = rightSensor.pushDown(4);
-			if (p1 != null && p2 != null)
-			{
-				trace(FlxAngle.angleBetween(leftSensor, rightSensor, true));
-			}
-		*/
-		
 		// Write variables to debug overlay
 		#if debug
 		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
+		//DebugOverlay.watchValue("Jumps", currentJumpCount);
+		//DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
+		//DebugOverlay.watchValue("On Wall", onWall);
+		//DebugOverlay.watchValue("Action Buffer", Std.int(actionSystem.delayTimer));
+		DebugOverlay.watchValue("Player Health", Std.int(health));
+		DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));
 		#end
 
 		// We're updating from PlayerLogix.hx bois
@@ -103,6 +98,7 @@ class Kholu extends Player
 	{
 		playerInput.bindInput("left", [FlxKey.LEFT]);
 		playerInput.bindInput("right", [FlxKey.RIGHT]);
+		playerInput.bindInput("up", [FlxKey.UP]);
 		playerInput.bindInput("jump", [FlxKey.Z]);
 		playerInput.bindInput("crouch", [FlxKey.DOWN]);
 		playerInput.bindAxis("horizontalAxis", "left", "right");
@@ -129,10 +125,10 @@ class Kholu extends Player
 		playerAnimation.createAnimation("damaged", [15,16], 20, false);
 		playerAnimation.createAnimation("walking", [17,18,19,20,21,22,23,24], 10, true);
 		playerAnimation.createAnimation("walking_holding", [25,26,27,28,29,30,31,32], 20, true);
-		playerAnimation.createAnimation("running", [33,34,35,36,37,38,39,40], 15, true);
-		playerAnimation.createAnimation("running_holding", [41,42,43,44,45,46,47,48], 15, true);
-		playerAnimation.createAnimation("sprinting", [49,50,51,52,53,54,55,56], 25, true);
-		playerAnimation.createAnimation("sprinting_holding", [57,58,59,60,61,62,63,64], 25, true);
+		playerAnimation.createAnimation("running", [33,34,35,36,37,38,39,40], 10, true);
+		playerAnimation.createAnimation("running_holding", [41,42,43,44,45,46,47,48], 10, true);
+		playerAnimation.createAnimation("sprinting", [49,50,51,52,53,54,55,56], 20, true);
+		playerAnimation.createAnimation("sprinting_holding", [57,58,59,60,61,62,63,64], 20, true);
 		playerAnimation.createAnimation("throwing", [65,66,67,68], 20, true);
 		playerAnimation.createAnimation("arm_swing_ground_forward", [69,70,71,72], 20, true);
 		playerAnimation.createAnimation("climbing_front", [73,74,75,76], 20, true);
@@ -159,6 +155,7 @@ class Kholu extends Player
 		playerAnimation.createAnimation("leaping", [161,162], 20, true);
 		playerAnimation.createAnimation("idle_walljumping", [163], 20, false);
 		playerAnimation.createAnimation("leaping_walljumping", [164], 20, false);
+		playerAnimation.createAnimationChain("walljumping", ["leaping_walljumping", "leaping_walljumping", "leaping", "jumping"], 20, true, 4);
 		playerAnimation.createAnimation("headspin_fast", [165,166], 20, true);
 		playerAnimation.createAnimation("damaged_backside", [167], 20, false);
 		playerAnimation.createAnimation("damaged_frontside", [168], 20, false);
@@ -182,4 +179,12 @@ class Kholu extends Player
 		playerAnimation.createAnimation("arm_swing_climbing_backward", [228,229,230,231], 20, false);
 	}
 
+	/**
+		Returns if the player is allowed to idle on the wall
+		@return Returns **True** if off of the ground, actively pushing towards a wall, and holding up
+	**/
+	public function canIdleOnWall():Bool
+	{
+		return (onWall != 0 && velocity.y >= 0 && playerInput.isInputDown("up"));
+	}
 }

@@ -1,6 +1,6 @@
 package systems;
 
-import entities.terrain.Wall;
+import entities.terrain.Solid;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxG;
 import flixel.util.FlxColor;
