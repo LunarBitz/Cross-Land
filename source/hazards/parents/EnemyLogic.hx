@@ -27,10 +27,12 @@ class EnemyStateLogic
      
     public function _State_Idle() 
     {
-        trace("Idle");
+        #if debug
+        //trace("Idle");
+        #end
         owner.velocity.x = 0;
 
-        if (owner.isPlayerWithin(175))
+        if (owner.isPlayerWithin(5, 175, true))
         {
             owner.actionSystem.setState(Detected);
         }
@@ -38,7 +40,9 @@ class EnemyStateLogic
 
     public function _State_Detected() 
     {
-        trace("Detected");
+        #if debug
+        //trace("Detected");
+        #end
         owner.velocity.x = 0;
 
         owner.actionSystem.setState(Walking, true);
@@ -46,15 +50,17 @@ class EnemyStateLogic
 
     public function _State_Walking() 
     {
-        trace("Walking");
+        #if debug
+        //trace("Walking");
+        #end
         owner.velocity.x = 50 * FlxMath.signOf(owner.target.x - owner.x);
         
 
-        if (owner.isPlayerWithin(16))
+        if (owner.isPlayerWithin(0, 16, true))
         {
             owner.actionSystem.setState(Pre_Attack);
         }
-        else if (!owner.isPlayerWithin(175))
+        else if (!owner.isPlayerWithin(5, 175, true))
         {
             owner.actionSystem.setState(Idle);
         }
@@ -62,7 +68,9 @@ class EnemyStateLogic
 
     public function _State_Pre_Attack() 
     {
-        trace("Pre_attack");
+        #if debug
+        //trace("Pre_attack");
+        #end
         owner.velocity.x = 0;
 
         owner.actionSystem.setState(Attack_1, true);
@@ -70,8 +78,10 @@ class EnemyStateLogic
 
     public function _State_Attack_1() 
     {
-        trace("Attacking_1");
-        if (!owner.isPlayerWithin(16))
+        #if debug
+        //trace("Attacking_1");
+        #end
+        if (!owner.isPlayerWithin(0, 16, true))
         {
             owner.actionSystem.setState(Idle, true);
         }
@@ -79,11 +89,15 @@ class EnemyStateLogic
 
     public function _State_Attack_2() 
     {
-        trace("Attacking_2");
+        #if debug
+        //trace("Attacking_2");
+        #end
     }
 
     public function _State_Attack_3() 
     {
-        trace("Attacking_3");
+        #if debug
+        //trace("Attacking_3");
+        #end
     }
 }

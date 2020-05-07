@@ -72,6 +72,8 @@ class PlayState extends FlxState
 			// Handle x and y collisions seperately for specialized logic
 			FlxG.overlap(player, solidTiles, player.resolveWallCollision, FlxObject.separateX);
 			FlxG.overlap(player, solidTiles, player.resolveFloorCollision, FlxObject.separateY);	
+
+			solidTiles.forEachExists(screenOpt);
 		}
 
 		// Check for jump through objects
@@ -124,6 +126,7 @@ class PlayState extends FlxState
 
 		// Disable collision for tiles 1-4 since we already established a collision grid
 		graphicTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
+		graphicTiles.ignoreDrawDebug = true;
 		
 
 		
@@ -169,11 +172,15 @@ class PlayState extends FlxState
 		}
 	}
 
-	function combineGroups(master:FlxTypedGroup<Dynamic>, groups:Array<FlxTypedGroup<Dynamic>>) 
+	private function combineGroups(master:FlxTypedGroup<Dynamic>, groups:Array<FlxTypedGroup<Dynamic>>) 
 	{
 		for (subGroup in groups)
 			for (item in subGroup)
 				master.add(item);
+	}
+	private function screenOpt(member:Solid) 
+	{
+		member.ignoreDrawDebug = member.isOnScreen();
 	}
 
 	public function resolveCollectableOverlap(player:Player, collectable:Collectable)

@@ -46,9 +46,15 @@ class Enemy extends Damager
         super.update(elapsed);
     }
 
-    public function isPlayerWithin(?distance:Float = 50):Bool
+    public function isPlayerWithin(?innerBound:Float = 5, ?outerBound:Float = 50, ?ignoreY:Bool = false, ?ignoreX:Bool = false):Bool
     {
-        return FlxMath.isDistanceWithin(this, target, distance, true);
+        var ownerX:Float = ignoreX? 0 : (this.x + (width / 2));
+        var ownerY:Float = ignoreY? 0 : (this.y + (height / 2));
+        var targetX:Float = ignoreX? 0 : (target.x + (target.width / 2));
+        var targetY:Float = ignoreY? 0 : (target.y + (target.height / 2));
+        var dist:Float = Math.sqrt(Math.pow(ownerX - targetX, 2) + Math.pow(ownerY - targetY, 2));
+       
+        return dist >= (innerBound + (width / 2)) && dist <= (outerBound + (width / 2));
     }
 
     /**
