@@ -1,5 +1,8 @@
 package hazards.enemies;
 
+import flixel.FlxObject;
+import hazards.enemies.BasicBlobLogic.BlobStateLogic;
+import Debug.DebugOverlay;
 import hazards.parents.Enemy;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
@@ -19,18 +22,27 @@ class BasicBlob extends Enemy
         damgeValue = 10;
         target = initialTarget;
 
-        enemyLogic = new EnemyStateLogic(this);
-        actionSystem = new ActionSystem(enemyLogic.states.Idle);
+        enemyLogic = new BlobStateLogic(this);
+        actionSystem = new ActionSystem(enemyLogic.states.Sleeping);
         actionSystem.setDelay(500);
         enemyAnimation = new ExtAnimationSystem(this);
 
         loadGraphic(AssetPaths.sprBlob__png, true, 45, 45);
-        setSize(frameWidth / 3, frameHeight - 4);
+        setSize(frameWidth / 2, (frameHeight / 2) - 3);
 		
-		offset.set(width, frameHeight - height);
-		centerOrigin();
+		offset.set(width / 2, frameHeight - height - 2);
+        centerOrigin();
+        
+        setFacingFlip(FlxObject.LEFT, true, false);
+		setFacingFlip(FlxObject.RIGHT, false, false);
 
         gatherAnimations();
+    }
+
+    override function update(elapsed:Float) 
+    {
+        // We're updating from EnemyLogic.hx bois
+        super.update(elapsed);
     }
 
     /**
@@ -38,12 +50,13 @@ class BasicBlob extends Enemy
 	**/
     private function gatherAnimations():Void 
     {
-        enemyAnimation.createAnimation("idle", [0,1], 20, true);
+        enemyAnimation.createAnimation("idle", [0,1], 3, true);
         enemyAnimation.createAnimation("pre-jump", [2,3,4,5], 20, true);
         enemyAnimation.createAnimation("jump", [6,7], 20, true);
         enemyAnimation.createAnimation("landing", [8,9,10,11,12,13,14,15], 20, true);
-        enemyAnimation.createAnimation("sleeping", [16,17,18,19,20,21], 20, true);
+        enemyAnimation.createAnimation("sleeping", [16,17,18,19,20,21], 5, true);
+        enemyAnimation.createAnimation("detected", [0,1], 20, true);
         enemyAnimation.createAnimation("spinning", [22,23,24,25,26,27,28,29,30,31,32,33], 20, false);
-        enemyAnimation.createAnimation("walking", [34,35,36,37,36,35], 20, true);
+        enemyAnimation.createAnimation("walking", [34, 35, 36, 37, 36, 35], 8, false);
     }
 }

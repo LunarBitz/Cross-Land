@@ -4,7 +4,8 @@ import flixel.math.FlxMath;
 
 enum EnemyStates 
 {
-	Null;
+    Null;
+    Sleeping;
 	Idle;
 	Detected;
     Walking;
@@ -30,6 +31,7 @@ class EnemyStateLogic
         #if debug
         //trace("Idle");
         #end
+        owner.isAttacking = false;
         owner.velocity.x = 0;
 
         if (owner.isPlayerWithin(5, 175, true))
@@ -43,6 +45,7 @@ class EnemyStateLogic
         #if debug
         //trace("Detected");
         #end
+        owner.isAttacking = false;
         owner.velocity.x = 0;
 
         owner.actionSystem.setState(Walking, true);
@@ -53,6 +56,7 @@ class EnemyStateLogic
         #if debug
         //trace("Walking");
         #end
+        owner.isAttacking = false;
         owner.velocity.x = 50 * FlxMath.signOf(owner.target.x - owner.x);
         
 
@@ -78,6 +82,7 @@ class EnemyStateLogic
 
     public function _State_Attack_1() 
     {
+        owner.isAttacking = true;
         #if debug
         //trace("Attacking_1");
         #end
@@ -89,6 +94,7 @@ class EnemyStateLogic
 
     public function _State_Attack_2() 
     {
+        owner.isAttacking = true;
         #if debug
         //trace("Attacking_2");
         #end
@@ -96,6 +102,7 @@ class EnemyStateLogic
 
     public function _State_Attack_3() 
     {
+        owner.isAttacking = true;
         #if debug
         //trace("Attacking_3");
         #end

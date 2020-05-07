@@ -196,7 +196,7 @@ class ExtAnimationSystem
     {
         if (owner.animation.curAnim != null)
         {
-            return (owner.animation.frameIndex == owner.animation.curAnim.frames[0]);
+            return (owner.animation.curAnim.curFrame == 0);
         }
 
         return false;
@@ -210,8 +210,7 @@ class ExtAnimationSystem
     {
         if (owner.animation.curAnim != null)
         {
-            var i = owner.animation.curAnim.frames.length - 1;
-            return (owner.animation.frameIndex == owner.animation.curAnim.frames[i]);
+            return (owner.animation.curAnim.curFrame == owner.animation.curAnim.frames.length - 1);
         }
 
         return false;

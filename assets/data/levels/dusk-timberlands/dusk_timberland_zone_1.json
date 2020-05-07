@@ -18,7 +18,7 @@
         {"name": "player", "id": 0, "_eid": "01046907", "x": 96, "y": 1120, "originX": 0, "originY": 0},
         {"name": "SPEEDREF", "id": 1, "_eid": "01664216", "x": 136, "y": 1120, "originX": 0, "originY": 0},
         {"name": "SPEEDREF", "id": 2, "_eid": "01664216", "x": 2368, "y": 752, "originX": 0, "originY": 0},
-        {"name": "enemy", "id": 3, "_eid": "62170527", "x": 952, "y": 1168, "originX": 0, "originY": 0}
+        {"name": "enemy", "id": 3, "_eid": "62170527", "x": 456, "y": 1144, "originX": 0, "originY": 0}
       ]
     },
     {

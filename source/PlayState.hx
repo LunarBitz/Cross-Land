@@ -1,5 +1,7 @@
 package;
 
+import hazards.enemies.BasicBlob;
+import lime.utils.Assets;
 import entities.terrain.CloudSolid;
 import Debug.DebugOverlay;
 import flixel.util.FlxColor;
@@ -41,6 +43,7 @@ class PlayState extends FlxState
 
 	private var enemies:FlxTypedGroup<Enemy>;
 	private var allDamagers:FlxTypedGroup<Damager>;
+	private var allAI:FlxTypedGroup<Enemy>;
 
 	private var cannons:FlxTypedGroup<Cannon>;
 	
@@ -73,6 +76,9 @@ class PlayState extends FlxState
 			FlxG.overlap(player, solidTiles, player.resolveWallCollision, FlxObject.separateX);
 			FlxG.overlap(player, solidTiles, player.resolveFloorCollision, FlxObject.separateY);	
 
+			FlxG.overlap(allAI, solidTiles, null, FlxObject.separateX);
+			FlxG.overlap(allAI, solidTiles, null, FlxObject.separateY);
+
 			solidTiles.forEachExists(screenOpt);
 		}
 
@@ -80,6 +86,7 @@ class PlayState extends FlxState
 		if (jumpThroughTiles != null)
 		{
 			FlxG.collide(player, jumpThroughTiles, player.resolveFloorCollision);	
+			FlxG.collide(allAI, jumpThroughTiles);	
 		}
 
 		if (allDamagers != null)
@@ -98,9 +105,7 @@ class PlayState extends FlxState
 
 	private function initOgmo3Map(projectPath:String, projectJson:String):Void 
 	{
-		var map = new FlxOgmo3Loader(projectPath, projectJson);	
-
-
+		var map = new FlxOgmo3Loader(projectPath, projectJson);
 
 		// Get the solid objects for collission
 		var grid:Map<String, Array<flixel.math.FlxPoint>> = map.loadGridMap("collision");
@@ -126,7 +131,9 @@ class PlayState extends FlxState
 
 		// Disable collision for tiles 1-4 since we already established a collision grid
 		graphicTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
+		#if debug
 		graphicTiles.ignoreDrawDebug = true;
+		#end
 		
 
 		
@@ -143,8 +150,10 @@ class PlayState extends FlxState
 		// Add groups for building
 		allCollectables = new FlxTypedGroup<Collectable>();
 		allDamagers = new FlxTypedGroup<Damager>();
+		allAI = new FlxTypedGroup<Enemy>();
 		combineGroups(allCollectables, [coins, gems]);
 		combineGroups(allDamagers, [enemies]);
+		combineGroups(allAI, [enemies]);
 		
 		add(allCollectables);
 		add(solidTiles);
@@ -168,7 +177,7 @@ class PlayState extends FlxState
 			case "gem":
 				gems.add(new Gem(entity.x, entity.y));
 			case "enemy":
-				enemies.add(new Enemy(entity.x, entity.y, 16, 16, player));
+				enemies.add(new BasicBlob(entity.x, entity.y, 16, 16, player));
 		}
 	}
 
@@ -180,7 +189,9 @@ class PlayState extends FlxState
 	}
 	private function screenOpt(member:Solid) 
 	{
+		#if debug
 		member.ignoreDrawDebug = member.isOnScreen();
+		#end
 	}
 
 	public function resolveCollectableOverlap(player:Player, collectable:Collectable)

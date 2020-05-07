@@ -85,6 +85,8 @@ class Kholu extends Player
 		DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));
 		#end
 
+		alpha = (invincibilityTimer>0)? (0.35 + (0.35 * invincibilityTimer%5)): 1;
+
 		// We're updating from PlayerLogix.hx bois
 		super.update(elapsed);
 	}

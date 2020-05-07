@@ -97,12 +97,13 @@ class ActionSystem
 		@param dT Change value that increments `delayTimer`
 		@param condition Boolean that allows increments or resets (Set **True** to increment only)
 	**/
-	public function updateTimer(dT:Float, ?condition:Bool = false):Void
+	public function updateTimer(dT:Float, ?condition:Bool):Void
 	{
 		if (condition)
-			delayTimer += dT * 1000;
+			this.delayTimer += dT * 1000;
 		else 
-			delayTimer = 0;
+			this.delayTimer = 0;
+		
 	}
     
 }
