@@ -56,7 +56,7 @@ class KholuStateLogics extends PlayerStateLogics
         // Falling
         if (!owner.isOnGround())
         {
-            owner.actionSystem.setState(Falling, true);
+            owner.actionSystem.setState(Falling, 50);
         }
             
         // Crouch

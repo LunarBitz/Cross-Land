@@ -34,7 +34,7 @@ class EnemyStateLogic
         owner.isAttacking = false;
         owner.velocity.x = 0;
 
-        if (owner.isPlayerWithin(5, 175, true))
+        if (owner.isObjectWithinDistance(owner.target, 5, 175, true))
         {
             owner.actionSystem.setState(Detected);
         }
@@ -48,7 +48,7 @@ class EnemyStateLogic
         owner.isAttacking = false;
         owner.velocity.x = 0;
 
-        owner.actionSystem.setState(Walking, true);
+        owner.actionSystem.setState(Walking, 500);
     }
 
     public function _State_Walking() 
@@ -60,11 +60,11 @@ class EnemyStateLogic
         owner.velocity.x = 50 * FlxMath.signOf(owner.target.x - owner.x);
         
 
-        if (owner.isPlayerWithin(0, 16, true))
+        if (owner.isObjectWithinDistance(owner.target, 0, 16, true))
         {
             owner.actionSystem.setState(Pre_Attack);
         }
-        else if (!owner.isPlayerWithin(5, 175, true))
+        else if (!owner.isObjectWithinDistance(owner.target, 5, 175, true))
         {
             owner.actionSystem.setState(Idle);
         }
@@ -77,7 +77,7 @@ class EnemyStateLogic
         #end
         owner.velocity.x = 0;
 
-        owner.actionSystem.setState(Attack_1, true);
+        owner.actionSystem.setState(Attack_1, 500);
     }
 
     public function _State_Attack_1() 
@@ -86,9 +86,9 @@ class EnemyStateLogic
         #if debug
         //trace("Attacking_1");
         #end
-        if (!owner.isPlayerWithin(0, 16, true))
+        if (!owner.isObjectWithinDistance(owner.target, 0, 16, true))
         {
-            owner.actionSystem.setState(Idle, true);
+            owner.actionSystem.setState(Idle, 500);
         }
     }
 

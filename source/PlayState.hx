@@ -24,7 +24,9 @@ import entities.terrain.Solid;
 import flixel.FlxState;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import flixel.tile.FlxTilemap;
+import misc.Hitbox;
 import systems.Hud;
+import LevelGlobals;
 
 
 using flixel.util.FlxSpriteUtil;
@@ -34,8 +36,6 @@ class PlayState extends FlxState
 	private var hud:GameHUD;
 
 	private var graphicTiles:FlxTilemap;
-	private var solidTiles:FlxTypedGroup<Solid>;
-	private var jumpThroughTiles:FlxTypedGroup<CloudSolid>;
 
 	private var allCollectables:FlxTypedGroup<Collectable>;
 	private var coins:FlxTypedGroup<Coin>;
@@ -50,8 +50,10 @@ class PlayState extends FlxState
 
 	override public function create():Void
 	{
-		player = new Kholu();
+		player = new Kholu(96, 1120, ["attack"]);
 		add(player);
+		if (player.hitboxes != null)
+			combineMaps(this, [player.hitboxes]);
 
 		FlxG.camera.follow(player, PLATFORMER, 1/8);
 
@@ -68,25 +70,31 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+		LevelGlobals.totalElapsed += elapsed * 1000;
+		
 		
 		// Check for solid objects
-		if (solidTiles != null)
+		if (LevelGlobals.solidsReference != null)
 		{
+			trace(LevelGlobals.solidsReference.length);
+
 			// Handle x and y collisions seperately for specialized logic
-			FlxG.overlap(player, solidTiles, player.resolveWallCollision, FlxObject.separateX);
-			FlxG.overlap(player, solidTiles, player.resolveFloorCollision, FlxObject.separateY);	
+			FlxG.overlap(player, LevelGlobals.solidsReference, player.resolveWallCollision, FlxObject.separateX);
+			FlxG.overlap(player, LevelGlobals.solidsReference, player.resolveFloorCollision, FlxObject.separateY);	
 
-			FlxG.overlap(allAI, solidTiles, null, FlxObject.separateX);
-			FlxG.overlap(allAI, solidTiles, null, FlxObject.separateY);
+			FlxG.overlap(allAI, LevelGlobals.solidsReference, null, FlxObject.separateX);
+			FlxG.overlap(allAI, LevelGlobals.solidsReference, null, FlxObject.separateY);
 
-			solidTiles.forEachExists(screenOpt);
+			LevelGlobals.solidsReference.forEach(LevelGlobals.screenOptimization);
 		}
 
 		// Check for jump through objects
-		if (jumpThroughTiles != null)
+		if (LevelGlobals.platformsReference != null)
 		{
-			FlxG.collide(player, jumpThroughTiles, player.resolveFloorCollision);	
-			FlxG.collide(allAI, jumpThroughTiles);	
+			FlxG.collide(player, LevelGlobals.platformsReference, player.resolveFloorCollision);	
+			FlxG.collide(allAI, LevelGlobals.platformsReference);	
+
+			LevelGlobals.platformsReference.forEach(LevelGlobals.screenOptimization);
 		}
 
 		if (allDamagers != null)
@@ -110,15 +118,13 @@ class PlayState extends FlxState
 		// Get the solid objects for collission
 		var grid:Map<String, Array<flixel.math.FlxPoint>> = map.loadGridMap("collision");
 		
-		solidTiles = new FlxTypedGroup<Solid>();
+		LevelGlobals.solidsReference = new FlxTypedGroup<Solid>();
 		for (point in grid['1'])
-			solidTiles.add(new Solid(point.x, point.y, 16, 16));
+			LevelGlobals.solidsReference.add(new Solid(point.x, point.y, 16, 16));
 
-		jumpThroughTiles = new FlxTypedGroup<CloudSolid>();
+		LevelGlobals.platformsReference = new FlxTypedGroup<CloudSolid>();
 		for (point in grid['P'])
-			jumpThroughTiles.add(new CloudSolid(point.x, point.y, 16, 16));
-		
-		player._solidsRef = solidTiles;
+			LevelGlobals.platformsReference.add(new CloudSolid(point.x, point.y, 16, 16));
 
 
 
@@ -156,8 +162,8 @@ class PlayState extends FlxState
 		combineGroups(allAI, [enemies]);
 		
 		add(allCollectables);
-		add(solidTiles);
-		add(jumpThroughTiles);
+		add(LevelGlobals.solidsReference);
+		add(LevelGlobals.platformsReference);
 		add(graphicTiles);
 		add(cannons);
 		add(allDamagers);
@@ -176,7 +182,7 @@ class PlayState extends FlxState
 				coins.add(new Coin(entity.x, entity.y));
 			case "gem":
 				gems.add(new Gem(entity.x, entity.y));
-			case "enemy":
+			case "basicBlob":
 				enemies.add(new BasicBlob(entity.x, entity.y, 16, 16, player));
 		}
 	}
@@ -187,11 +193,12 @@ class PlayState extends FlxState
 			for (item in subGroup)
 				master.add(item);
 	}
-	private function screenOpt(member:Solid) 
+
+	private function combineMaps(master:FlxTypedGroup<Dynamic>, groups:Array<Map<Dynamic, Dynamic>>) 
 	{
-		#if debug
-		member.ignoreDrawDebug = member.isOnScreen();
-		#end
+		for (subGroup in groups)
+			for (item in subGroup)
+				master.add(item);
 	}
 
 	public function resolveCollectableOverlap(player:Player, collectable:Collectable)

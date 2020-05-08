@@ -124,6 +124,7 @@ class ExtAnimationSystem
         @param animName The string name of the animation you want to play.
         @param forcePlay Whether to force the animation to restart.
         @param playReversed Whether to play animation backwards or not.
+        @param specialLoop Whether to loop the animation in a special way (Very important for custom loops and holding animations).
         @param startingFrame The frame number in the animation you want to start from. If a negative value is passed, a random frame is used.
         @param holdOnLastFrame Whether to pause the animation on the last frame.
     **/

@@ -34,7 +34,7 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
-        if (owner.isPlayerWithin(5, 64, true))
+        if (owner.isObjectWithinDistance(owner.target, 5, 64, true))
         {
             owner.actionSystem.setState(Detected);
         }
@@ -54,7 +54,7 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
-        if (owner.isPlayerWithin(5, 135, true))
+        if (owner.isObjectWithinDistance(owner.target, 5, 135, true))
         {
             owner.actionSystem.setState(Detected);
         }
@@ -74,7 +74,7 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
-        owner.actionSystem.setState(Walking, true);
+        owner.actionSystem.setState(Walking, 750);
         // #endregion 
 
         // #region Animations
@@ -89,9 +89,9 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
-        if (owner.isPlayerWithin(0, 16, true))
+        if (owner.isObjectWithinDistance(owner.target, 0, 16, true))
             owner.actionSystem.setState(Pre_Attack);
-        else if (!owner.isPlayerWithin(5, 135, true))
+        else if (!owner.isObjectWithinDistance(owner.target, 5, 135, true))
             owner.actionSystem.setState(Idle);
         // #endregion 
 
@@ -110,10 +110,12 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
-        owner.actionSystem.setState(Attack_1, true);
+        owner.actionSystem.setState(Attack_1, 500);
         // #endregion 
 
         // #region Animations
+        if (owner.actionSystem.hasChanged())
+            owner.enemyAnimation.setAnimation("pre-spin", false, false, true, 0, true);
         // #endregion 
     }
 
@@ -126,11 +128,13 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
-        if (!owner.isPlayerWithin(0, 16, true))
-            owner.actionSystem.setState(Idle, true);
+        if (!owner.isObjectWithinDistance(owner.target, 0, 16, true))
+            owner.actionSystem.setState(Idle, 750);
         // #endregion 
 
         // #region Animations
+        if (owner.actionSystem.hasChanged())
+            owner.enemyAnimation.setAnimation("spinning", false, false, true);
         // #endregion 
     }
 

@@ -5,7 +5,6 @@ class ActionSystem
 	var previousState:Dynamic = null;
 	var currentState:Dynamic = null;
 	public var delayTimer:Float = 0;
-	public var delayThreshold:Int = 0;
 
 	public function new(?defaultAction:Dynamic = null) 
 	{
@@ -25,19 +24,12 @@ class ActionSystem
 	/**
 		Update the previous and current state
 		@param newState Desired state to change to
+		@param delay Delay time in milliseconds 
 		@return Current state
 	**/
-	public function setState(newState:Dynamic, ?useDelay:Bool = false):Dynamic
+	public function setState(newState:Dynamic, ?delay:Float = 0):Dynamic
 	{
-		if (useDelay)
-		{
-			if (delayTimer >= delayThreshold)
-			{
-				previousState = currentState;
-				currentState = newState;
-			}
-		}
-		else
+		if (delayTimer >= delay)
 		{
 			previousState = currentState;
 			currentState = newState;
@@ -79,17 +71,6 @@ class ActionSystem
 		}
 
 		return false;
-	}
-
-	/**
-		Update the delay threshold  for actions setting that utilizes it
-		@param milliseconds Max time for delayed triggering in milliseconds (1000 = 1 second)
-		@return New delay value
-	**/
-	public function setDelay(?milliseconds:Int = 0):Int
-	{
-		delayThreshold = Std.int(Math.max(0, milliseconds));
-		return delayThreshold;
 	}
 
 	/**

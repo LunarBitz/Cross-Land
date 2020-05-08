@@ -1,5 +1,6 @@
 package entities.player;
 
+import misc.Hitbox;
 import hazards.parents.Damager;
 import systems.PixelSensor;
 import flixel.util.FlxColor;
@@ -19,6 +20,7 @@ import systems.Action;
 import systems.Input;
 import flixel.input.keyboard.FlxKey;
 import entities.player.PlayerLogic;
+import LevelGlobals;
 
 class Player extends FlxSprite 
 {
@@ -38,6 +40,7 @@ class Player extends FlxSprite
 	public var grounded:Bool = false;
 	public var onWall:Int = 0;
 	public var invincibilityTimer:Int = 0;
+	public var hitboxes:Map<String, Hitbox>;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
@@ -57,9 +60,6 @@ class Player extends FlxSprite
 	private var jumpBufferTimer:Float = 0;
 	private var jumpBufferFrames:Int = 150;
 	
-	
-
-	public var _solidsRef:Dynamic;
 
 	private var timePassed:Float = 0;
 
@@ -67,6 +67,11 @@ class Player extends FlxSprite
 	public function new(?X:Float = 0, ?Y:Float = 0) 
 	{
 		super(X, Y);
+
+		hitboxes = new Map<String, Hitbox>();
+		createHitbox("Sliding", 32, 16); 
+
+		
 
 		// Set up the needed custom systems
 		playerLogic = new PlayerStateLogics(this);
@@ -119,7 +124,11 @@ class Player extends FlxSprite
 		updateVelocity();
 
 		timePassed += elapsed;
+
 		super.update(elapsed);
+
+		for (hb in hitboxes)
+			hb.setPosition(x, y);
 	}
 
 	/**
@@ -171,6 +180,11 @@ class Player extends FlxSprite
 				Reflect.callMethod(playerLogic, fn, []);
 			}	
 		}
+	}
+
+	public function createHitbox(?hitboxName:String = null, ?w:Int = 0, ?h:Int = 0) 
+	{
+		hitboxes[hitboxName] = new Hitbox(x, y, w, h, this);
 	}
 
 	/**
@@ -327,7 +341,7 @@ class Player extends FlxSprite
 	**/
 	public function willCollide(xVelocity:Float, yVelocity:Float):Bool
 	{
-		return overlapsAt(x + (xVelocity * FlxG.elapsed), y + (yVelocity * FlxG.elapsed), _solidsRef);		
+		return overlapsAt(x + (xVelocity * FlxG.elapsed), y + (yVelocity * FlxG.elapsed), LevelGlobals.solidsReference);		
 	}
 
 	/**

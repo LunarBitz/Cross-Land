@@ -1,5 +1,6 @@
 package entities.player.characters;
 
+import misc.Hitbox;
 import flixel.math.FlxPoint;
 import flixel.math.FlxAngle;
 import Debug.DebugOverlay;
@@ -34,14 +35,21 @@ class Kholu extends Player
 			below.
 	**/
 
-	override public function new(?X:Float = 0, ?Y:Float = 0) 
+	override public function new(?X:Float = 0, ?Y:Float = 0, ?hitboxNames:Array<String> = null)
 	{
 		super(X, Y);
+
+		hitboxes = new Map<String, Hitbox>();
+
+		if (hitboxNames != null)
+		{
+			for (hb in hitboxNames)
+				hitboxes[hb] = new Hitbox(x, y, 32, 32, this);
+		}
 
 		// Set up the needed custom systems
 		playerLogic = new KholuStateLogics(this);
 		actionSystem = new ActionSystem(Normal);
-		actionSystem.setDelay(50);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
 

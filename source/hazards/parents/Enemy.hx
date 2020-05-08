@@ -1,11 +1,13 @@
 package hazards.parents;
 
+import misc.Hitbox;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
 import systems.Action.ActionSystem;
 import hazards.parents.EnemyLogic;
 import systems.ExtendedAnimation;
+import LevelGlobals;
 
 class Enemy extends Damager
 {
@@ -16,17 +18,20 @@ class Enemy extends Damager
     public var enemyReach:Float = 175; 
     public var isAttacking:Bool = false;
     public var target:FlxSprite;
+    public var hitboxes:Map<String, Hitbox>;
     
     override public function new(?X:Float = 0, ?Y:Float = 0, ?Width:Int = 1, ?Height:Int = 1, ?initialTarget:FlxSprite) 
     {
         super(X, Y);
+
+        hitboxes = new Map<String, Hitbox>();
+        createHitbox("Attack", 32, 16); 
 
         acceleration.y = 981;
 		maxVelocity.y = 1500;
 
         enemyLogic = new EnemyStateLogic(this);
         actionSystem = new ActionSystem(enemyLogic.states.Idle);
-        actionSystem.setDelay(500);
         enemyAnimation = new ExtAnimationSystem(this);
 
         makeGraphic(Width, Height, 0xFFFF00FF);
@@ -47,11 +52,20 @@ class Enemy extends Damager
         var states = enemyLogic.states;
         actionSystem.updateTimer(elapsed, actionSystem.isAnAction([states.Detected, states.Pre_Attack]) || isAttacking);
 
+        for (solid in LevelGlobals.solidsReference)
+            if (!solid.exists)
+                solid.exists = isObjectWithinDistance(solid, 0, 64);
+
         updateDirection();
 
         callStates();
 
         super.update(elapsed);
+    }
+
+    public function createHitbox(?hitboxName:String = null, ?w:Int = 0, ?h:Int = 0) 
+    {
+        hitboxes[hitboxName] = new Hitbox(x, y, w, h, this);
     }
 
     /**
@@ -64,12 +78,12 @@ class Enemy extends Damager
             facing = (velSign == -1)? FlxObject.LEFT : FlxObject.RIGHT;
     }
 
-    public function isPlayerWithin(?innerBound:Float = 8, ?outerBound:Float = 50, ?ignoreY:Bool = false, ?ignoreX:Bool = false):Bool
+    public function isObjectWithinDistance(other:FlxSprite, ?innerBound:Float = 8, ?outerBound:Float = 50, ?ignoreY:Bool = false, ?ignoreX:Bool = false):Bool
     {
         var ownerX:Float = ignoreX? 0 : (this.x + (width / 2));
         var ownerY:Float = ignoreY? 0 : (this.y + (height / 2));
-        var targetX:Float = ignoreX? 0 : (target.x + (target.width / 2));
-        var targetY:Float = ignoreY? 0 : (target.y + (target.height / 2));
+        var targetX:Float = ignoreX? 0 : (other.x + (other.width / 2));
+        var targetY:Float = ignoreY? 0 : (other.y + (other.height / 2));
         var dist:Float = Math.sqrt(Math.pow(ownerX - targetX, 2) + Math.pow(ownerY - targetY, 2));
        
         return dist >= (innerBound + (width / 2)) && dist <= (outerBound + (width / 2));

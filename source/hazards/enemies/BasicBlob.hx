@@ -1,13 +1,11 @@
 package hazards.enemies;
 
+import misc.Hitbox;
 import flixel.FlxObject;
 import hazards.enemies.BasicBlobLogic.BlobStateLogic;
-import Debug.DebugOverlay;
 import hazards.parents.Enemy;
 import flixel.FlxSprite;
-import flixel.math.FlxMath;
 import systems.Action.ActionSystem;
-import hazards.parents.EnemyLogic;
 import systems.ExtendedAnimation;
 
 class BasicBlob extends Enemy
@@ -15,6 +13,9 @@ class BasicBlob extends Enemy
     override public function new(?X:Float = 0, ?Y:Float = 0, ?Width:Int = 1, ?Height:Int = 1, ?initialTarget:FlxSprite) 
     {
         super(X, Y);
+
+        hitboxes = new Map<String, Hitbox>();
+        createHitbox("Spinning", 32, 40); 
 
         visible = true;
         alpha = 1;
@@ -24,7 +25,6 @@ class BasicBlob extends Enemy
 
         enemyLogic = new BlobStateLogic(this);
         actionSystem = new ActionSystem(enemyLogic.states.Sleeping);
-        actionSystem.setDelay(500);
         enemyAnimation = new ExtAnimationSystem(this);
 
         loadGraphic(AssetPaths.sprBlob__png, true, 45, 45);
@@ -56,7 +56,8 @@ class BasicBlob extends Enemy
         enemyAnimation.createAnimation("landing", [8,9,10,11,12,13,14,15], 20, true);
         enemyAnimation.createAnimation("sleeping", [16,17,18,19,20,21], 5, true);
         enemyAnimation.createAnimation("detected", [0,1], 20, true);
-        enemyAnimation.createAnimation("spinning", [22,23,24,25,26,27,28,29,30,31,32,33], 20, false);
+        enemyAnimation.createAnimation("pre-spin", [9,10,11,12], 10, false);
+        enemyAnimation.createAnimation("spinning", [12,11,10,9,22,23,24,25,26,27,28,29,30,31,32,33], 20, true, 8);
         enemyAnimation.createAnimation("walking", [34, 35, 36, 37, 36, 35], 8, false);
     }
 }
