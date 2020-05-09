@@ -19,6 +19,7 @@ class LevelGlobals
 
     public static var allDamagers:FlxTypedGroup<Damager>;
     
+    static public var deltaTime:Float = 0;
     static public var totalElapsed:Float = 0;
 
     static public function screenOptimization(object:Solid) 

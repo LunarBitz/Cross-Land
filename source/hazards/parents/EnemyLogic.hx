@@ -13,6 +13,7 @@ enum EnemyStates
     Attack_1;
     Attack_2;
     Attack_3;
+    Damaged;
 }
 
 class EnemyStateLogic
@@ -107,4 +108,6 @@ class EnemyStateLogic
         //trace("Attacking_3");
         #end
     }
+
+    public function _State_Damaged() {}
 }

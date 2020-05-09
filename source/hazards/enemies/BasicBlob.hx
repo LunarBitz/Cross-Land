@@ -39,6 +39,8 @@ class BasicBlob extends Enemy
 
     override function update(elapsed:Float) 
     {
+        alpha = (invincibilityTimer>0)? (0.35 + (0.35 * invincibilityTimer % 5)): 1;
+
         // We're updating from EnemyLogic.hx bois
         super.update(elapsed);
     }
@@ -58,5 +60,6 @@ class BasicBlob extends Enemy
         enemyAnimation.createAnimation("spinning", [12,11,10,9,22,23,24,25,26,27,28,29,30,31,32,33], 20, true, 8);
         enemyAnimation.createAnimation("post-spin", [25,24,23,22], 10, false);
         enemyAnimation.createAnimation("walking", [34, 35, 36, 37, 36, 35], 8, false);
+        enemyAnimation.createAnimation("damaged", [8], 3, true);
     }
 }

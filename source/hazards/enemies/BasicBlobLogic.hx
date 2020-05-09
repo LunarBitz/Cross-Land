@@ -1,5 +1,6 @@
 package hazards.enemies;
 
+import flixel.FlxObject;
 import hazards.parents.EnemyLogic.EnemyStateLogic;
 import hazards.parents.Enemy;
 import flixel.math.FlxMath;
@@ -14,6 +15,7 @@ enum EnemyStates
     Pre_Attack;
     Attack_1;
     Post_Attack_1;
+    Damaged;
 }
 
 class BlobStateLogic extends EnemyStateLogic
@@ -30,6 +32,8 @@ class BlobStateLogic extends EnemyStateLogic
     {
         // #region Basics
         owner.velocity.x = 0;
+
+        owner.canChangeDirections = false;
 
         owner.isAttacking = false;
 
@@ -52,6 +56,8 @@ class BlobStateLogic extends EnemyStateLogic
     {
         // #region Basics
         owner.velocity.x = 0;
+
+        owner.canChangeDirections = false;
 
         owner.isAttacking = false;
 
@@ -76,6 +82,8 @@ class BlobStateLogic extends EnemyStateLogic
         // #region Basics
         owner.velocity.x = 0;
 
+        owner.canChangeDirections = false;
+
         owner.isAttacking = false;
 
         owner.hitboxes["Spinning"].exists = false;
@@ -95,6 +103,8 @@ class BlobStateLogic extends EnemyStateLogic
     {
         // #region Basics
         owner.velocity.x = 50 * FlxMath.signOf(owner.target.x - owner.x);
+
+        owner.canChangeDirections = true;
 
         owner.hitboxes["Spinning"].exists = false;
         // #endregion 
@@ -117,6 +127,8 @@ class BlobStateLogic extends EnemyStateLogic
         // #region Basics
         owner.velocity.x = 0;
 
+        owner.canChangeDirections = false;
+
         owner.isAttacking = true;
 
         owner.hitboxes["Spinning"].exists = false;
@@ -137,7 +149,7 @@ class BlobStateLogic extends EnemyStateLogic
         // #region Basics
         owner.velocity.x = 0;
 
-        
+        owner.canChangeDirections = false;
 
         if (owner.enemyAnimation.getCurrentAnimation() == "spinning")
         {
@@ -163,6 +175,8 @@ class BlobStateLogic extends EnemyStateLogic
         // #region Basics
         owner.velocity.x = 0;
 
+        owner.canChangeDirections = false;
+
         owner.isAttacking = true;
 
         owner.hitboxes["Spinning"].exists = false;
@@ -178,6 +192,25 @@ class BlobStateLogic extends EnemyStateLogic
         if (owner.actionSystem.hasChanged())
             owner.enemyAnimation.setAnimation("post-spin", false, false, true, 0, true);
         // #endregion 
+    }
+
+    override public function _State_Damaged() 
+    {
+        // #region Basics 
+        // Facing Direction
+        owner.canChangeDirections = false;
+
+        // #endregion
+
+        // #region Logic 
+        if (owner.isTouching(FlxObject.DOWN) && owner.velocity.y >= 0)
+            owner.actionSystem.setState(Idle, 250);
+        // #endregion
+
+        // #region Animations
+        if (owner.actionSystem.hasChanged())
+            owner.enemyAnimation.setAnimation("damaged", false, false, true, 0, true);
+        // #endregion
     }
 
 }

@@ -247,6 +247,7 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Logic 
         if (owner.onWall !=0 && owner.playerInput.getAxis("horizontalAxis") == -owner.onWall)
         {
+            owner.sfx["wall_jump"].play(true);
             owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, -owner.onWall, 1);
             owner.velocity.y = owner.JUMP_SPEED;
             owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT;

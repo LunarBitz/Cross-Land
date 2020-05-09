@@ -35,17 +35,12 @@ class Kholu extends Player
 			below.
 	**/
 
-	override public function new(?X:Float = 0, ?Y:Float = 0, ?hitboxNames:Array<String> = null)
+	override public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(X, Y);
 
 		hitboxes = new Map<String, Hitbox>();
-
-		if (hitboxNames != null)
-		{
-			for (hb in hitboxNames)
-				hitboxes[hb] = new Hitbox(x, y, 32, 32, this);
-		}
+		createHitbox("Sliding", 64, 16, true);
 
 		// Set up the needed custom systems
 		playerLogic = new KholuStateLogics(this);

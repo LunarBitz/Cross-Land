@@ -1,5 +1,6 @@
 package entities.player;
 
+import flixel.system.FlxSound;
 import misc.Hitbox;
 import hazards.parents.Damager;
 import systems.PixelSensor;
@@ -29,6 +30,7 @@ class Player extends FlxSprite
 	public var actionSystem:ActionSystem;
 	public var playerAnimation:ExtAnimationSystem;
 	public var playerInput:InputSystem;
+	public var sfx:Map<String, FlxSound>;
 
 	// Input
 	public var DEAD_ZONE(default, never):Float = 0.1;
@@ -61,21 +63,20 @@ class Player extends FlxSprite
 	private var jumpBufferFrames:Int = 150;
 	
 
-	private var timePassed:Float = 0;
-
 
 	public function new(?X:Float = 0, ?Y:Float = 0) 
 	{
 		super(X, Y);
 
 		hitboxes = new Map<String, Hitbox>();
-		//createHitbox("Sliding", 32, 16); 
+		//createHitbox("Sliding", 64, 16, true); 
 
 		// Set up the needed custom systems
 		playerLogic = new PlayerStateLogics(this);
 		actionSystem = new ActionSystem(playerLogic.states.Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
+		sfx = new Map<String, FlxSound>();
 
 		gatherInputs();
 
@@ -94,6 +95,8 @@ class Player extends FlxSprite
 
 		gatherAnimations();
 
+		gatherSounds();
+
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
 		
@@ -102,7 +105,10 @@ class Player extends FlxSprite
 	override function update(elapsed:Float) 
 	{
 		if (hitboxes != null && LevelGlobals.totalElapsed == 0)
+		{
 			LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
+			LevelGlobals.combineMaps(LevelGlobals.allDamagers, [hitboxes]);  
+		}
 		
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
@@ -123,8 +129,6 @@ class Player extends FlxSprite
 
 		// Apply velocity
 		updateVelocity();
-
-		timePassed += elapsed;
 
 		super.update(elapsed);
 
@@ -168,6 +172,13 @@ class Player extends FlxSprite
 		animation.add("idle", [0], 45, false);
 		animation.add("crouching", [1, 2, 3, 4, 5, 6], 45, false);
 		animation.add("uncrouching", [6, 5, 4, 3, 2, 1], 45, false);
+	}
+
+	private function gatherSounds():Void
+	{
+		sfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
+		sfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
+		sfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
 	}
 
 	/**
@@ -247,12 +258,15 @@ class Player extends FlxSprite
 			// Follow through with jump if jump buffer is within frames
 			if (jumpBufferTimer < jumpBufferFrames)
 			{
+				sfx["jump"].play(true);
+				sfx["long_jump"].fadeIn(0.25, 0, 0.40);
+				sfx["long_jump"].play(true);
 				currentJumpCount--;
 				velocity.y = JUMP_SPEED;
 				jumpBufferTimer = jumpBufferFrames;
 
 				#if debug
-				trace('Jump() || Buffer Jumping - Time:${timePassed}');
+				trace('Jump() || Buffer Jumping - Time:${LevelGlobals.totalElapsed}');
 				#end
 			}
 		}
@@ -269,11 +283,14 @@ class Player extends FlxSprite
 			// Only jump if the player has jumps left
 			if (currentJumpCount > 0)
 			{
+				sfx["jump"].play(true);
+				sfx["long_jump"].fadeIn(0.25, 0, 0.40);
+				sfx["long_jump"].play(true);
 				currentJumpCount--;
 				velocity.y = JUMP_SPEED;
 
 				#if debug
-				trace('Jump() || Pressed Jump - Time:${timePassed}');
+				trace('Jump() || Pressed Jump - Time:${LevelGlobals.totalElapsed}');
 				#end
 			}	
 		}
@@ -283,6 +300,9 @@ class Player extends FlxSprite
 		// Holding = max jump height
 		if (velocity.y < 0 && !playerInput.isInputDown("jump"))
 		{
+			sfx["long_jump"].fadeOut(0.05, 0);
+			if (sfx["long_jump"].volume == 0)
+				sfx["long_jump"].stop();
 			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
 		}
 
@@ -386,15 +406,23 @@ class Player extends FlxSprite
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/
-	public function resolveDamagerCollision(player:Player, other:Damager):Void
+	public static function resolveDamagerCollision(player:Player, other:Damager):Void
 	{
 		var states = player.playerLogic.states;
-		var dir = (facing == FlxObject.LEFT)? -1 : 1;
+		var dir = 0;
 
 		if (player.alive && player.exists && other.alive && other.exists)
 		{
-			if (player.invincibilityTimer == 0)
+			// Exit function if hitbox collides with its owner
+			if (Type.getClass(other) == Hitbox)
 			{
+				if (cast(other, Hitbox).owner == player) { return; }
+			}
+
+			if (player.invincibilityTimer == 0 && other.canInflictDamage)
+			{
+				dir = FlxMath.signOf(other.x - player.x);
+				
 				player.invincibilityTimer = 1500;
 
 				player.health -= other.damgeValue;

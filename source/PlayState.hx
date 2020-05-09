@@ -52,7 +52,7 @@ class PlayState extends FlxState
 		LevelGlobals.currentState = this;
 		LevelGlobals.totalElapsed = 0;
 
-		player = new Kholu(96, 1120, ["attack"]);
+		player = new Kholu(96, 1120);
 		add(player);
 
 		FlxG.camera.follow(player, PLATFORMER, 1/8);
@@ -63,6 +63,18 @@ class PlayState extends FlxState
 		add(hud);
 
 		add(new DebugOverlay());
+
+		if (FlxG.sound.music == null) // don't restart the music if it's already playing
+		{
+			FlxG.sound.playMusic(AssetPaths.ostDusk_Timberlands__ogg, 0.3, true);
+		}
+		var ambienceTrack = FlxG.sound.load(AssetPaths.ambForest__ogg, 0.35);
+		if (ambienceTrack != null) // don't restart the music if it's already playing
+		{
+			ambienceTrack.looped = true;
+			ambienceTrack.play();
+	
+		}
 		 
 		super.create();
 	}
@@ -70,6 +82,7 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+		LevelGlobals.deltaTime = elapsed;
 		LevelGlobals.totalElapsed += elapsed * 1000;
 		
 		
@@ -99,7 +112,9 @@ class PlayState extends FlxState
 
 		if (LevelGlobals.allDamagers != null)
 		{
-			FlxG.overlap(player, LevelGlobals.allDamagers, player.resolveDamagerCollision);
+			FlxG.overlap(player, LevelGlobals.allDamagers, Player.resolveDamagerCollision);
+			if (allAI != null)
+				FlxG.overlap(allAI, LevelGlobals.allDamagers, Enemy.resolveDamagerCollision);
 		}
 
 		// Check for collectable objects
