@@ -13,6 +13,7 @@ enum EnemyStates
     Walking;
     Pre_Attack;
     Attack_1;
+    Post_Attack_1;
 }
 
 class BlobStateLogic extends EnemyStateLogic
@@ -31,6 +32,8 @@ class BlobStateLogic extends EnemyStateLogic
         owner.velocity.x = 0;
 
         owner.isAttacking = false;
+
+        owner.hitboxes["Spinning"].exists = false;
         // #endregion 
 
         // #region Logic
@@ -92,10 +95,12 @@ class BlobStateLogic extends EnemyStateLogic
     {
         // #region Basics
         owner.velocity.x = 50 * FlxMath.signOf(owner.target.x - owner.x);
+
+        owner.hitboxes["Spinning"].exists = false;
         // #endregion 
 
         // #region Logic
-        if (owner.isObjectWithinDistance(owner.target, 0, 8, true))
+        if (owner.isObjectWithinDistance(owner.target, 0, 12, true))
             owner.actionSystem.setState(Pre_Attack);
         else if (!owner.isObjectWithinDistance(owner.target, 5, 135, true))
             owner.actionSystem.setState(Idle);
@@ -112,7 +117,7 @@ class BlobStateLogic extends EnemyStateLogic
         // #region Basics
         owner.velocity.x = 0;
 
-        owner.isAttacking = false;
+        owner.isAttacking = true;
 
         owner.hitboxes["Spinning"].exists = false;
         // #endregion 
@@ -132,20 +137,46 @@ class BlobStateLogic extends EnemyStateLogic
         // #region Basics
         owner.velocity.x = 0;
 
-        owner.isAttacking = true;
+        
 
-        owner.hitboxes["Spinning"].exists = true;
+        if (owner.enemyAnimation.getCurrentAnimation() == "spinning")
+        {
+            owner.isAttacking = owner.enemyAnimation.hasPassedLoopFrame();
+            owner.hitboxes["Spinning"].exists = owner.enemyAnimation.hasPassedLoopFrame();
+        }
 
         // #endregion 
 
         // #region Logic
-        if (!owner.isObjectWithinDistance(owner.target, 0, 8, true))
-            owner.actionSystem.setState(Idle, 750);
+        if (!owner.isObjectWithinDistance(owner.target, 0, 12, true))
+            owner.actionSystem.setState(Post_Attack_1, 500);
         // #endregion 
 
         // #region Animations
         if (owner.actionSystem.hasChanged())
             owner.enemyAnimation.setAnimation("spinning", false, false, true);
+        // #endregion 
+    }
+
+    public function _State_Post_Attack_1() 
+    {
+        // #region Basics
+        owner.velocity.x = 0;
+
+        owner.isAttacking = true;
+
+        owner.hitboxes["Spinning"].exists = false;
+
+        // #endregion 
+
+        // #region Logic
+        if (!owner.isObjectWithinDistance(owner.target, 0, 12, true))
+            owner.actionSystem.setState(Idle, 750);
+        // #endregion 
+
+        // #region Animations
+        if (owner.actionSystem.hasChanged())
+            owner.enemyAnimation.setAnimation("post-spin", false, false, true, 0, true);
         // #endregion 
     }
 

@@ -14,7 +14,7 @@ class BasicBlob extends Enemy
     {
         super(X, Y);
 
-        createHitbox("Spinning", 32, 26); 
+        createHitbox("Spinning", 36, 26); 
 
         visible = true;
         alpha = 1;
@@ -56,6 +56,7 @@ class BasicBlob extends Enemy
         enemyAnimation.createAnimation("detected", [0,1], 20, true);
         enemyAnimation.createAnimation("pre-spin", [9,10,11,12], 10, false);
         enemyAnimation.createAnimation("spinning", [12,11,10,9,22,23,24,25,26,27,28,29,30,31,32,33], 20, true, 8);
+        enemyAnimation.createAnimation("post-spin", [25,24,23,22], 10, false);
         enemyAnimation.createAnimation("walking", [34, 35, 36, 37, 36, 35], 8, false);
     }
 }

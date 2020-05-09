@@ -175,6 +175,28 @@ class ExtAnimationSystem
         Returns the current animation as a string
         @return Current animation name
     **/
+	public function getLoopFrame():Int
+    {
+        return _animationLoopPoints[owner.animation.curAnim.name];
+    }
+
+    /**
+        Returns the current animation as a string
+        @return Current animation name
+    **/
+	public function hasPassedLoopFrame():Bool
+    {
+        if (owner.animation.curAnim != null)
+        {
+            return owner.animation.curAnim.curFrame >= _animationLoopPoints[owner.animation.curAnim.name];
+        }
+        return false;
+    }
+
+    /**
+        Returns the current animation as a string
+        @return Current animation name
+    **/
 	public function getCurrentAnimation():String
 	{
 		return _currentAnimation;
