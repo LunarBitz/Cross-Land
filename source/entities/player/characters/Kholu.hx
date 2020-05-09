@@ -40,7 +40,7 @@ class Kholu extends Player
 		super(X, Y);
 
 		hitboxes = new Map<String, Hitbox>();
-		createHitbox("Sliding", 64, 16, true);
+		//createHitbox("Sliding", 64, 16, true);
 
 		// Set up the needed custom systems
 		playerLogic = new KholuStateLogics(this);

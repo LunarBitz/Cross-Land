@@ -55,6 +55,7 @@ class PlayState extends FlxState
 		player = new Kholu(96, 1120);
 		add(player);
 
+		FlxG.camera.fade(FlxColor.BLACK, 1, true);
 		FlxG.camera.follow(player, PLATFORMER, 1/8);
 
 		initOgmo3Map(AssetPaths.CrossLandsMaps__ogmo, AssetPaths.dusk_timberland_zone_1__json);

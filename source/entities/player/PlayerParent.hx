@@ -421,8 +421,10 @@ class Player extends FlxSprite
 
 			if (player.invincibilityTimer == 0 && other.canInflictDamage)
 			{
+				FlxG.camera.shake(0.005, 0.2);
+
 				dir = FlxMath.signOf(other.x - player.x);
-				
+
 				player.invincibilityTimer = 1500;
 
 				player.health -= other.damgeValue;
