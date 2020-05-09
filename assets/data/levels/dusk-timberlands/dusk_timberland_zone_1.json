@@ -15,13 +15,10 @@
       "gridCellsX": 1888,
       "gridCellsY": 314,
       "entities": [
-        {"name": "player", "id": 0, "_eid": "01046907", "x": 96, "y": 1120, "originX": 0, "originY": 0},
+        {"name": "player", "id": 0, "_eid": "01046907", "x": 48, "y": 1128, "originX": 0, "originY": 0},
         {"name": "SPEEDREF", "id": 1, "_eid": "01664216", "x": 136, "y": 1120, "originX": 0, "originY": 0},
         {"name": "SPEEDREF", "id": 2, "_eid": "01664216", "x": 2368, "y": 752, "originX": 0, "originY": 0},
-        {"name": "basicBlob", "id": 3, "_eid": "62170527", "x": 432, "y": 1120, "originX": 0, "originY": 0},
-        {"name": "basicBlob", "id": 4, "_eid": "62170527", "x": 1120, "y": 1104, "originX": 0, "originY": 0},
-        {"name": "basicBlob", "id": 5, "_eid": "62170527", "x": 1248, "y": 1040, "originX": 0, "originY": 0},
-        {"name": "basicBlob", "id": 7, "_eid": "62170527", "x": 120, "y": 1056, "originX": 0, "originY": 0}
+        {"name": "basicBlob", "id": 8, "_eid": "62170527", "x": 424, "y": 1120, "originX": 0, "originY": 0}
       ]
     },
     {

@@ -69,9 +69,7 @@ class Player extends FlxSprite
 		super(X, Y);
 
 		hitboxes = new Map<String, Hitbox>();
-		createHitbox("Sliding", 32, 16); 
-
-		
+		//createHitbox("Sliding", 32, 16); 
 
 		// Set up the needed custom systems
 		playerLogic = new PlayerStateLogics(this);
@@ -103,6 +101,9 @@ class Player extends FlxSprite
 
 	override function update(elapsed:Float) 
 	{
+		if (hitboxes != null && LevelGlobals.totalElapsed == 0)
+			LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
+		
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
 
@@ -128,7 +129,10 @@ class Player extends FlxSprite
 		super.update(elapsed);
 
 		for (hb in hitboxes)
-			hb.setPosition(x, y);
+		{
+			hb.positionBox("South", "South");
+			hb.followOwner();
+		}
 	}
 
 	/**
@@ -182,9 +186,9 @@ class Player extends FlxSprite
 		}
 	}
 
-	public function createHitbox(?hitboxName:String = null, ?w:Int = 0, ?h:Int = 0) 
+	public function createHitbox(?hitboxName:String = null, ?w:Int = 0, ?h:Int = 0, initialExist:Bool = false) 
 	{
-		hitboxes[hitboxName] = new Hitbox(x, y, w, h, this);
+		hitboxes[hitboxName] = new Hitbox(x, y, w, h, initialExist, this);
 	}
 
 	/**

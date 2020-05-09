@@ -14,8 +14,7 @@ class BasicBlob extends Enemy
     {
         super(X, Y);
 
-        hitboxes = new Map<String, Hitbox>();
-        createHitbox("Spinning", 32, 40); 
+        createHitbox("Spinning", 32, 26); 
 
         visible = true;
         alpha = 1;
@@ -29,7 +28,6 @@ class BasicBlob extends Enemy
 
         loadGraphic(AssetPaths.sprBlob__png, true, 45, 45);
         setSize(frameWidth / 2, (frameHeight / 2) - 3);
-		
 		offset.set(width / 2, frameHeight - height - 2);
         centerOrigin();
         

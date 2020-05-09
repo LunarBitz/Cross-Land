@@ -51,6 +51,9 @@ class BlobStateLogic extends EnemyStateLogic
         owner.velocity.x = 0;
 
         owner.isAttacking = false;
+
+        owner.hitboxes["Spinning"].exists = false;
+
         // #endregion 
 
         // #region Logic
@@ -71,6 +74,9 @@ class BlobStateLogic extends EnemyStateLogic
         owner.velocity.x = 0;
 
         owner.isAttacking = false;
+
+        owner.hitboxes["Spinning"].exists = false;
+
         // #endregion 
 
         // #region Logic
@@ -89,7 +95,7 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
-        if (owner.isObjectWithinDistance(owner.target, 0, 16, true))
+        if (owner.isObjectWithinDistance(owner.target, 0, 8, true))
             owner.actionSystem.setState(Pre_Attack);
         else if (!owner.isObjectWithinDistance(owner.target, 5, 135, true))
             owner.actionSystem.setState(Idle);
@@ -107,6 +113,8 @@ class BlobStateLogic extends EnemyStateLogic
         owner.velocity.x = 0;
 
         owner.isAttacking = false;
+
+        owner.hitboxes["Spinning"].exists = false;
         // #endregion 
 
         // #region Logic
@@ -125,10 +133,13 @@ class BlobStateLogic extends EnemyStateLogic
         owner.velocity.x = 0;
 
         owner.isAttacking = true;
+
+        owner.hitboxes["Spinning"].exists = true;
+
         // #endregion 
 
         // #region Logic
-        if (!owner.isObjectWithinDistance(owner.target, 0, 16, true))
+        if (!owner.isObjectWithinDistance(owner.target, 0, 8, true))
             owner.actionSystem.setState(Idle, 750);
         // #endregion 
 

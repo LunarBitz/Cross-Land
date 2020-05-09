@@ -25,7 +25,7 @@ class Enemy extends Damager
         super(X, Y);
 
         hitboxes = new Map<String, Hitbox>();
-        createHitbox("Attack", 32, 16); 
+        createHitbox("Attack", 8, 8, false); 
 
         acceleration.y = 981;
 		maxVelocity.y = 1500;
@@ -48,7 +48,13 @@ class Enemy extends Damager
 
     override function update(elapsed:Float) 
     {
-
+        if (hitboxes != null && LevelGlobals.totalElapsed == 0)
+        {
+            LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
+            LevelGlobals.combineMaps(LevelGlobals.allDamagers, [hitboxes]);
+            
+        }
+        
         var states = enemyLogic.states;
         actionSystem.updateTimer(elapsed, actionSystem.isAnAction([states.Detected, states.Pre_Attack]) || isAttacking);
 
@@ -60,12 +66,24 @@ class Enemy extends Damager
 
         callStates();
 
+        for (hb in hitboxes)
+        {
+            hb.positionBox("South", "South");
+            hb.followOwner();
+        }
+
         super.update(elapsed);
+
+        
+			
     }
 
-    public function createHitbox(?hitboxName:String = null, ?w:Int = 0, ?h:Int = 0) 
+    public function createHitbox(?hitboxName:String = null, ?w:Int = 0, ?h:Int = 0, initialExist:Bool = false) 
     {
-        hitboxes[hitboxName] = new Hitbox(x, y, w, h, this);
+        if (hitboxes == null)
+            hitboxes = new Map<String, Hitbox>();
+
+        hitboxes[hitboxName] = new Hitbox(x, y, w, h, initialExist, this);
     }
 
     /**
@@ -95,13 +113,13 @@ class Enemy extends Damager
 	**/
 	public function callStates():Void
     {
-        for (state in Type.allEnums(enemyLogic.states))
-        { 
-            var fn = Reflect.field(enemyLogic, "_State_" + Std.string(state));
-            if (fn != null && actionSystem.getState() == state)
+        //for (state in Type.allEnums(enemyLogic.states))
+        //{ 
+            var fn = Reflect.field(enemyLogic, "_State_" + Std.string(actionSystem.getState()));
+            if (fn != null)
             {
                 Reflect.callMethod(enemyLogic, fn, []);
             }	
-        }
+        //}
     }
 }

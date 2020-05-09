@@ -42,7 +42,6 @@ class PlayState extends FlxState
 	private var gems:FlxTypedGroup<Gem>;
 
 	private var enemies:FlxTypedGroup<Enemy>;
-	private var allDamagers:FlxTypedGroup<Damager>;
 	private var allAI:FlxTypedGroup<Enemy>;
 
 	private var cannons:FlxTypedGroup<Cannon>;
@@ -50,10 +49,11 @@ class PlayState extends FlxState
 
 	override public function create():Void
 	{
+		LevelGlobals.currentState = this;
+		LevelGlobals.totalElapsed = 0;
+
 		player = new Kholu(96, 1120, ["attack"]);
 		add(player);
-		if (player.hitboxes != null)
-			combineMaps(this, [player.hitboxes]);
 
 		FlxG.camera.follow(player, PLATFORMER, 1/8);
 
@@ -76,7 +76,7 @@ class PlayState extends FlxState
 		// Check for solid objects
 		if (LevelGlobals.solidsReference != null)
 		{
-			trace(LevelGlobals.solidsReference.length);
+			//trace(LevelGlobals.solidsReference.length);
 
 			// Handle x and y collisions seperately for specialized logic
 			FlxG.overlap(player, LevelGlobals.solidsReference, player.resolveWallCollision, FlxObject.separateX);
@@ -97,11 +97,10 @@ class PlayState extends FlxState
 			LevelGlobals.platformsReference.forEach(LevelGlobals.screenOptimization);
 		}
 
-		if (allDamagers != null)
+		if (LevelGlobals.allDamagers != null)
 		{
-			FlxG.overlap(player, allDamagers, player.resolveDamagerCollision);
+			FlxG.overlap(player, LevelGlobals.allDamagers, player.resolveDamagerCollision);
 		}
-
 
 		// Check for collectable objects
 		if (allCollectables != null)
@@ -155,19 +154,25 @@ class PlayState extends FlxState
 
 		// Add groups for building
 		allCollectables = new FlxTypedGroup<Collectable>();
-		allDamagers = new FlxTypedGroup<Damager>();
+		LevelGlobals.allDamagers = new FlxTypedGroup<Damager>();
 		allAI = new FlxTypedGroup<Enemy>();
-		combineGroups(allCollectables, [coins, gems]);
-		combineGroups(allDamagers, [enemies]);
-		combineGroups(allAI, [enemies]);
+		LevelGlobals.combineGroups(allCollectables, [coins, gems]);
+		LevelGlobals.combineGroups(LevelGlobals.allDamagers, [enemies]);
+		LevelGlobals.combineGroups(allAI, [enemies]);
 		
 		add(allCollectables);
 		add(LevelGlobals.solidsReference);
 		add(LevelGlobals.platformsReference);
 		add(graphicTiles);
 		add(cannons);
-		add(allDamagers);
+		add(LevelGlobals.allDamagers);
 		
+	}
+
+	function orderedAdd(group:FlxTypedGroup<Dynamic>, entities:Array<Dynamic>) 
+	{
+		for (entity in entities)
+			group.add(entity);
 	}
 
 	function placeEntities(entity:EntityData)
@@ -185,20 +190,6 @@ class PlayState extends FlxState
 			case "basicBlob":
 				enemies.add(new BasicBlob(entity.x, entity.y, 16, 16, player));
 		}
-	}
-
-	private function combineGroups(master:FlxTypedGroup<Dynamic>, groups:Array<FlxTypedGroup<Dynamic>>) 
-	{
-		for (subGroup in groups)
-			for (item in subGroup)
-				master.add(item);
-	}
-
-	private function combineMaps(master:FlxTypedGroup<Dynamic>, groups:Array<Map<Dynamic, Dynamic>>) 
-	{
-		for (subGroup in groups)
-			for (item in subGroup)
-				master.add(item);
 	}
 
 	public function resolveCollectableOverlap(player:Player, collectable:Collectable)
