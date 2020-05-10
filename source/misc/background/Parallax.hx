@@ -1,27 +1,24 @@
 package misc.background;
 
-import flixel.util.FlxColor;
-import openfl.geom.ColorTransform;
-import openfl.display.BitmapData;
-import flixel.FlxG;
-import flixel.tile.FlxTileblock;
+import flixel.addons.display.FlxBackdrop;
 
 class Parallax 
 {
-    public static var elements:Map<String, FlxTileblock>;
-    public static var globalXOffset:Int = 0;
-    public static var globalYOffset:Int = 0;
+    public static var elements:Map<String, FlxBackdrop>;
 
     public static function init()
     {
-        elements = new Map<String, FlxTileblock>();
+        elements = new Map<String, FlxBackdrop>();
     }
 
-    public static function addElement(name:String, assetPath:String, ?elementWidth:Int = 0, ?elementHeight:Int = 0, ?initialX:Int = 0, ?initialY:Int = 0, ?scrollXSpeed:Float = 1, ?scrollYSpeed:Float = 0, ?opacity:Float = 1, ?canOffset:Bool = true):FlxTileblock
+    public static function addElement(  name:String,        assetPath:String,   ?elementWidth:Int = 0,      ?elementHeight:Int = 0, 
+                                        ?initialX:Int = 0,  ?initialY:Int = 0,  ?scrollXSpeed:Float = 1,    ?scrollYSpeed:Float = 0, 
+                                        ?opacity:Float = 1, ?canOffset:Bool = true
+                                     ):FlxBackdrop
     {
-        elements[name] = new FlxTileblock(initialX, initialY, elementWidth, elementHeight);
+        elements[name] = new FlxBackdrop(assetPath, scrollXSpeed, scrollYSpeed, true, false);
 
-        elements[name].loadTiles(assetPath, elementWidth, elementHeight, 0);
+        elements[name].setPosition(initialX, initialY);
         elements[name].alpha = opacity;
         elements[name].scrollFactor.set(scrollXSpeed, scrollYSpeed);
 
@@ -33,7 +30,7 @@ class Parallax
 		return elements[name];
     }
 
-    public static function offsetElements(?xOff:Int = 0, ?yOff:Int = 0) 
+    public static function shiftAllElements(?xOff:Int = 0, ?yOff:Int = 0):Void
     {
         for (ele in elements)
         {

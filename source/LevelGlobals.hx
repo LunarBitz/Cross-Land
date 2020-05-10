@@ -1,5 +1,7 @@
 package;
 
+import flixel.tile.FlxTilemap;
+import flixel.FlxSprite;
 import hazards.parents.Damager;
 import flixel.tile.FlxTileblock;
 import flixel.FlxG;
@@ -18,12 +20,20 @@ class LevelGlobals
     static public var solidsReference:FlxTypedGroup<Solid>;
     static public var platformsReference:FlxTypedGroup<CloudSolid>;
 
+    static public var backgroundTiles:FlxTilemap;
+    static public var mainTiles:FlxTilemap;
+    static public var foregroundTiles:FlxTilemap;
+
+    static public var backgroundDecor:FlxTilemap;
+    static public var mainDecor:FlxTilemap;
+    static public var foregroundDecor:FlxTilemap;
+
     public static var allDamagers:FlxTypedGroup<Damager>;
     
     static public var deltaTime:Float = 0;
     static public var totalElapsed:Float = 0;
 
-    static public function screenOptimization(object:Solid) 
+    static public function screenOptimization(object:FlxSprite) 
     {
         #if debug
         object.ignoreDrawDebug = object.isOnScreen();

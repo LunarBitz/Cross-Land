@@ -37,8 +37,6 @@ class PlayState extends FlxState
 	private var hud:GameHUD;
 	//private var bgParallax:Parallax;
 
-	private var graphicTiles:FlxTilemap;
-
 	private var allCollectables:FlxTypedGroup<Collectable>;
 	private var coins:FlxTypedGroup<Coin>;
 	private var gems:FlxTypedGroup<Gem>;
@@ -54,22 +52,11 @@ class PlayState extends FlxState
 		LevelGlobals.currentState = this;
 		LevelGlobals.totalElapsed = 0;
 
-		Parallax.init();
-
-		Parallax.addElement("sky", AssetPaths.parSky__png, 783, 240, 0, 0, 1/64, 0, 1, false);
-
-		Parallax.addElement("back_cloud", AssetPaths.parCloud__png, 458, 98, 0, 19, 1/64, 1/96);
-		
-		Parallax.addElement("mountains", AssetPaths.parMountain2__png, 688, 256, 0, 70, 1/60, 1/92);
-
-		Parallax.addElement("front_cloud", AssetPaths.parCloud__png, 458, 98, 220, 54, 1/54, 1/84, 0.5);
-
-		Parallax.addElement("pine_forest_1", AssetPaths.parPine1__png, 688, 148, 0, 136, 1/48, 1/64);
-		Parallax.addElement("pine_forest_2", AssetPaths.parPine2__png, 688, 199, 0, 151, 1/32, 1/32);
+		initBackground();
 
 
 		player = new Kholu(96, 1120);
-		add(player);
+		
 
 		FlxG.camera.fade(FlxColor.BLACK, 2, true);
 		FlxG.camera.follow(player, PLATFORMER, 1/8);
@@ -79,7 +66,6 @@ class PlayState extends FlxState
 		
 		
 		hud = new GameHUD();
-		add(hud);
 
 		
 
@@ -97,7 +83,8 @@ class PlayState extends FlxState
 	
 		}
 
-		add(new DebugOverlay());
+		addInOrder();
+		
 		 
 		super.create();
 	}
@@ -107,8 +94,7 @@ class PlayState extends FlxState
 		super.update(elapsed);
 		LevelGlobals.deltaTime = elapsed;
 		LevelGlobals.totalElapsed += elapsed * 1000;
-		
-		
+
 		// Check for solid objects
 		if (LevelGlobals.solidsReference != null)
 		{
@@ -148,6 +134,20 @@ class PlayState extends FlxState
 
 	}
 
+	private function initBackground() 
+	{
+		Parallax.init();
+
+		Parallax.addElement("sky", AssetPaths.parSky__png, 783, 240, 0, 0, 1/64, 0, 1, false);
+		Parallax.addElement("back_cloud", AssetPaths.parCloud__png, 458, 98, 0, 19, 1/64, 1/96);
+		
+		Parallax.addElement("mountains", AssetPaths.parMountain2__png, 688, 256, 0, 70, 1/32, 1/92);
+		Parallax.addElement("front_cloud", AssetPaths.parCloud__png, 458, 98, 220, 54, 1/24, 1/24, 0.5);
+
+		Parallax.addElement("pine_forest_1", AssetPaths.parPine1__png, 688, 148, 0, 136, 1/16, 1/48);
+		Parallax.addElement("pine_forest_2", AssetPaths.parPine2__png, 688, 199, 0, 196, 1/8, 1/16);
+	}
+
 	private function initOgmo3Map(projectPath:String, projectJson:String):Void 
 	{
 		var map = new FlxOgmo3Loader(projectPath, projectJson);
@@ -169,16 +169,29 @@ class PlayState extends FlxState
 		// Note: When creating a tileset in a sprite editor, ALWAYS leave the first tile 
 		//		 blank (0 alpha)! Will save you a lot of time and spared of the headache 
 		// 		 trying to figure out why the tiles aren't rendering.
-		graphicTiles = map.loadTilemap(AssetPaths.tsDuskTimberlands_1__png, "graphics");
-		graphicTiles.follow();
+		LevelGlobals.backgroundTiles = map.loadTilemap(AssetPaths.tsDuskTimberlands_back__png, "tiles_background");
+		LevelGlobals.mainTiles = map.loadTilemap(AssetPaths.tsDuskTimberlands_main__png, "tiles_main");
+		LevelGlobals.foregroundTiles = map.loadTilemap(AssetPaths.tsDuskTimberlands_front__png, "tiles_foreground");
+
+		LevelGlobals.backgroundDecor = map.loadTilemap(AssetPaths.decDuskTimberlands_main__png, "decor_background");
+    	LevelGlobals.mainDecor = map.loadTilemap(AssetPaths.decDuskTimberlands_main__png, "decor_main");
+    	//LevelGlobals.foregroundDecor = map.loadTilemap(AssetPaths.decDuskTimberlands_main__png, "decor_background");
+
+
+		LevelGlobals.backgroundTiles.follow();
+		LevelGlobals.mainTiles.follow();
+		LevelGlobals.foregroundTiles.follow();
 
 		// Disable collision for tiles 1-4 since we already established a collision grid
-		graphicTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
+		LevelGlobals.backgroundTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
+		LevelGlobals.mainTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
+		LevelGlobals.foregroundTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
+	
 		#if debug
-		graphicTiles.ignoreDrawDebug = true;
+		LevelGlobals.backgroundTiles.ignoreDrawDebug = true;
+		LevelGlobals.mainTiles.ignoreDrawDebug = true;
+		LevelGlobals.foregroundTiles.ignoreDrawDebug = true;
 		#end
-		
-
 		
 		// Get all entities
 		cannons = new FlxTypedGroup<Cannon>();
@@ -198,13 +211,27 @@ class PlayState extends FlxState
 		LevelGlobals.combineGroups(LevelGlobals.allDamagers, [enemies]);
 		LevelGlobals.combineGroups(allAI, [enemies]);
 		
-		add(allCollectables);
+		
+		
+	}
+
+	private function addInOrder()
+	{
 		add(LevelGlobals.solidsReference);
 		add(LevelGlobals.platformsReference);
-		add(graphicTiles);
+
+		add(LevelGlobals.backgroundTiles);
+		add(LevelGlobals.backgroundDecor);
+		add(allCollectables);
 		add(cannons);
+		add(LevelGlobals.mainTiles);
+		add(LevelGlobals.mainDecor);
 		add(LevelGlobals.allDamagers);
-		
+		add(player);
+		add(LevelGlobals.foregroundTiles);
+
+		add(hud);
+		add(new DebugOverlay());
 	}
 
 	function orderedAdd(group:FlxTypedGroup<Dynamic>, entities:Array<Dynamic>) 
