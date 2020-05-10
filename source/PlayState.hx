@@ -26,6 +26,7 @@ import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import flixel.tile.FlxTilemap;
 import misc.Hitbox;
 import systems.Hud;
+import misc.background.Parallax;
 import LevelGlobals;
 
 
@@ -34,6 +35,7 @@ class PlayState extends FlxState
 {
 	private var player:Kholu;
 	private var hud:GameHUD;
+	//private var bgParallax:Parallax;
 
 	private var graphicTiles:FlxTilemap;
 
@@ -52,30 +54,50 @@ class PlayState extends FlxState
 		LevelGlobals.currentState = this;
 		LevelGlobals.totalElapsed = 0;
 
+		Parallax.init();
+
+		Parallax.addElement("sky", AssetPaths.parSky__png, 783, 240, 0, 0, 1/64, 0, 1, false);
+
+		Parallax.addElement("back_cloud", AssetPaths.parCloud__png, 458, 98, 0, 19, 1/64, 1/96);
+		
+		Parallax.addElement("mountains", AssetPaths.parMountain2__png, 688, 256, 0, 70, 1/60, 1/92);
+
+		Parallax.addElement("front_cloud", AssetPaths.parCloud__png, 458, 98, 220, 54, 1/54, 1/84, 0.5);
+
+		Parallax.addElement("pine_forest_1", AssetPaths.parPine1__png, 688, 148, 0, 136, 1/48, 1/64);
+		Parallax.addElement("pine_forest_2", AssetPaths.parPine2__png, 688, 199, 0, 151, 1/32, 1/32);
+
+
 		player = new Kholu(96, 1120);
 		add(player);
 
-		FlxG.camera.fade(FlxColor.BLACK, 1, true);
+		FlxG.camera.fade(FlxColor.BLACK, 2, true);
 		FlxG.camera.follow(player, PLATFORMER, 1/8);
 
 		initOgmo3Map(AssetPaths.CrossLandsMaps__ogmo, AssetPaths.dusk_timberland_zone_1__json);
 
+		
+		
 		hud = new GameHUD();
 		add(hud);
 
-		add(new DebugOverlay());
+		
 
 		if (FlxG.sound.music == null) // don't restart the music if it's already playing
 		{
-			FlxG.sound.playMusic(AssetPaths.ostDusk_Timberlands__ogg, 0.3, true);
+			FlxG.sound.playMusic(AssetPaths.ostDusk_Timberlands__ogg, 0.15, true);
+			FlxG.sound.music.fadeIn(5, 0, 0.15);
 		}
-		var ambienceTrack = FlxG.sound.load(AssetPaths.ambForest__ogg, 0.35);
+		var ambienceTrack = FlxG.sound.load(AssetPaths.ambForest__ogg, 0.05);
 		if (ambienceTrack != null) // don't restart the music if it's already playing
 		{
 			ambienceTrack.looped = true;
 			ambienceTrack.play();
+			ambienceTrack.fadeIn(5, 0, 0.05);
 	
 		}
+
+		add(new DebugOverlay());
 		 
 		super.create();
 	}
@@ -147,7 +169,7 @@ class PlayState extends FlxState
 		// Note: When creating a tileset in a sprite editor, ALWAYS leave the first tile 
 		//		 blank (0 alpha)! Will save you a lot of time and spared of the headache 
 		// 		 trying to figure out why the tiles aren't rendering.
-		graphicTiles = map.loadTilemap(AssetPaths.tsGrasstop__png, "graphics");
+		graphicTiles = map.loadTilemap(AssetPaths.tsDuskTimberlands_1__png, "graphics");
 		graphicTiles.follow();
 
 		// Disable collision for tiles 1-4 since we already established a collision grid
@@ -197,6 +219,7 @@ class PlayState extends FlxState
 		{
 			case "player":
 				player.setPosition(entity.x, entity.y);
+				//Parallax.offsetElements(entity.x, entity.y);
 			case "cannon":
 				cannons.add(new Cannon(entity.x, entity.y, entity.values.facing_direction));
 			case "coin":

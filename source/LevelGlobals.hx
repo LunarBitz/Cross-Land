@@ -1,6 +1,7 @@
 package;
 
 import hazards.parents.Damager;
+import flixel.tile.FlxTileblock;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;

@@ -1,5 +1,6 @@
 package hazards.parents;
 
+import LevelGlobals;
 import misc.Hitbox;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -7,7 +8,7 @@ import flixel.math.FlxMath;
 import systems.Action.ActionSystem;
 import hazards.parents.EnemyLogic;
 import systems.ExtendedAnimation;
-import LevelGlobals;
+
 
 class Enemy extends Damager
 {
