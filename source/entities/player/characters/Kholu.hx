@@ -40,7 +40,7 @@ class Kholu extends Player
 		super(X, Y);
 
 		hitboxes = new Map<String, Hitbox>();
-		//createHitbox("Sliding", 64, 16, true);
+		createHitbox("tailwhip", 40, 32, true);
 
 		// Set up the needed custom systems
 		playerLogic = new KholuStateLogics(this);
@@ -71,7 +71,6 @@ class Kholu extends Player
 		setFacingFlip(FlxObject.RIGHT, false, false);
 
 		grounded = false;
-		//playerAnimation.setAnimation("idle_normal");
 	}
 
 	override function update(elapsed:Float) 
@@ -106,9 +105,9 @@ class Kholu extends Player
 		playerInput.bindInput("up", [FlxKey.UP]);
 		playerInput.bindInput("jump", [FlxKey.Z]);
 		playerInput.bindInput("crouch", [FlxKey.DOWN]);
-		playerInput.bindAxis("horizontalAxis", "left", "right");
+		playerInput.bindInput("attack_1", [FlxKey.X]);
 
-		playerInput.bindInput("push", [FlxKey.V]);
+		playerInput.bindAxis("horizontalAxis", "left", "right");
     }
 	
 	/**
@@ -139,7 +138,7 @@ class Kholu extends Player
 		playerAnimation.createAnimation("climbing_front", [73,74,75,76], 20, true);
 		playerAnimation.createAnimation("climbed_front", [77], 20, false);
 		playerAnimation.createAnimation("climbed_side", [78], 20, false);
-		playerAnimation.createAnimation("tail_whip_R-L", [79,80,81,82], 20, false);
+		playerAnimation.createAnimation("tail_whip_R-L", [79,80,81,82,79,80,81,82], 25, false);
 		playerAnimation.createAnimation("punch_slam_ground", [83,84,85,86,87,88], 20, false);
 		playerAnimation.createAnimation("right_punch", [89,90,91,92], 20, false);
 		playerAnimation.createAnimation("left_punch", [93,94,95,96], 20, false);

@@ -14,12 +14,11 @@ enum PlayerStates
     Falling;
     Crouching;
     Uncrouching;
-    Sliding;
     Damaged;
     Walljump_Idle;
     Walljumping;
     Hurt;
-    KL;
+    Tailwhip_R_L;
 }
 
 class KholuStateLogics extends PlayerStateLogics
@@ -39,6 +38,10 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Basics
         // Facing Direction
         owner.canChangeDirections = true;
+        owner.canResetState = false;
+        owner.isAttacking = false;
+
+        owner.hitboxes["tailwhip"].exists = false;
 
         // Horizontal Movement
         if (owner.playerAnimation.getCurrentAnimation() != "uncrouching")
@@ -62,6 +65,13 @@ class KholuStateLogics extends PlayerStateLogics
         // Crouch
         if (owner.playerInput.isInputDown("crouch"))
             owner.actionSystem.setState(Crouching);
+
+        if (owner.playerInput.isInputDown("attack_1_just_pressed"))
+        {
+            owner.actionSystem.resetTimer();
+            owner.actionSystem.setState(Tailwhip_R_L);
+        }
+
         // #endregion
 
         // #region Animations
@@ -95,6 +105,7 @@ class KholuStateLogics extends PlayerStateLogics
             owner.playerAnimation.transition("jump_fall", "idle_normal");
             owner.playerAnimation.transition("idle_walljumping", "idle_normal");
             owner.playerAnimation.transition("damaged_frontside", "idle_normal");
+            owner.playerAnimation.transition("tail_whip_R-L", "idle_normal");
         }
         // #endregion
     }
@@ -106,6 +117,8 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Basics
         // Facing Direction
         owner.canChangeDirections = false;
+        owner.canResetState = false;
+        owner.isAttacking = false;
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.CROUCH_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO * 4);
@@ -130,6 +143,8 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Basics
         // Facing Direction
         owner.canChangeDirections = false;
+        owner.canResetState = false;
+        owner.isAttacking = false;
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.UNCROUCH_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO / 2);
@@ -160,6 +175,8 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Basics 
         // Facing Direction
         owner.canChangeDirections = true;
+        owner.canResetState = true;
+        owner.isAttacking = false;
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
@@ -174,6 +191,12 @@ class KholuStateLogics extends PlayerStateLogics
 
         if (cast(owner, Kholu).canIdleOnWall())
             owner.actionSystem.setState(Walljump_Idle);
+
+        if (owner.playerInput.isInputDown("attack_1_just_pressed"))
+        {
+            owner.actionSystem.resetTimer();
+            owner.actionSystem.setState(Tailwhip_R_L);
+        }
         // #endregion
 
         // #region Animations
@@ -191,6 +214,10 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Basics 
         // Facing Direction
         owner.canChangeDirections = true;
+        owner.canResetState = true;
+        owner.isAttacking = false;
+
+        owner.hitboxes["tailwhip"].exists = false;
 
         // Horizontal movement
         owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
@@ -202,29 +229,17 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Logic 
         if (cast(owner, Kholu).canIdleOnWall() && owner.actionSystem.getPreviousState() != Walljump_Idle)
             owner.actionSystem.setState(Walljump_Idle);
+
+        if (owner.playerInput.isInputDown("attack_1_just_pressed"))
+        {
+            owner.actionSystem.resetTimer();
+            owner.actionSystem.setState(Tailwhip_R_L);
+        }
         // #endregion
 
         // #region Animations
         if (owner.velocity.y >= 0)
             owner.playerAnimation.setAnimation("jump_fall");
-        // #endregion
-    }
-
-
-    
-    override public function _State_Sliding() 
-    {
-        // #region Basics 
-        // Facing Direction
-        owner.canChangeDirections = false;
-        // #endregion
-
-        // #region Logic
-        // #endregion
-
-        // #region Animations
-        if (owner.actionSystem.hasChanged())
-            owner.playerAnimation.setAnimation("crouching");
         // #endregion
     }
 
@@ -235,6 +250,8 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Basics 
         // Facing Direction
         owner.canChangeDirections = false;
+        owner.canResetState = true;
+        owner.isAttacking = false;
         owner.facing = owner.onWall == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on onWall only
 
         // Horizontal movement
@@ -274,6 +291,9 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Basics 
         // Facing Direction
         owner.canChangeDirections = false;
+        owner.canResetState = true;
+        owner.isAttacking = false;
+
         if (owner.onWall != 0) 
             owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on xSpeed only
 
@@ -305,6 +325,9 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Basics 
         // Facing Direction
         owner.canChangeDirections = false;
+        owner.canResetState = true;
+        owner.isAttacking = false;
+
         owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on xSpeed only
 
         // Horizontal Movement
@@ -321,6 +344,49 @@ class KholuStateLogics extends PlayerStateLogics
         // #region Animations
         if (owner.actionSystem.hasChanged())
             owner.playerAnimation.setAnimation("damaged_frontside", false, false, true, 0, true);
+        // #endregion
+    }
+
+    public function _State_Tailwhip_R_L() 
+    {
+        // #region Basics
+        // Facing Direction
+        owner.canChangeDirections = false;
+        owner.canResetState = false;
+        owner.isAttacking = true;
+        
+
+        owner.hitboxes["tailwhip"].exists = true;
+
+        // Horizontal Movement
+        owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED * 1.1, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+        //owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED * 1.1, owner.facing == FlxObject.LEFT?  -1:1, 1);
+        
+        // Vertical Movement
+        //owner.velocity.y = 0;
+        owner.scaleGravity(0.85, 0.65);
+        // #endregion  
+
+        // #region Logic
+        // Falling
+        if (owner.playerAnimation.isAnimationFinished() && owner.playerAnimation.getCurrentAnimation() == "tail_whip_R-L")
+        {
+            if (owner.isOnGround())
+                owner.actionSystem.setState(Normal, 250);
+            else
+                owner.actionSystem.setState(Falling, 250);
+        }
+            
+        
+        // #endregion
+
+        // #region Animations
+        // Only allow an animation change if there has been a state change
+        if (owner.actionSystem.hasChanged())
+        {
+            // To uncrouching animation if previously crouching
+            owner.playerAnimation.setAnimation("tail_whip_R-L", false, false, true, 0, true);
+        }
         // #endregion
     }
 }

@@ -86,5 +86,15 @@ class ActionSystem
 			this.delayTimer = 0;
 		
 	}
+
+	/**
+		Update the delay threshold  for actions setting that utilizes it
+		@param dT Change value that increments `delayTimer`
+		@param condition Boolean that allows increments or resets (Set **True** to increment only)
+	**/
+	public function resetTimer():Void
+	{
+		this.delayTimer = 0;
+	}
     
 }

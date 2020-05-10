@@ -7,6 +7,7 @@ class ExtAnimationSystem
 {
     var owner:FlxSprite;
 
+    private var _animationFinished:Bool = false;
 	private var _previousAnimation:String = "";
     private var _currentAnimation:String = "";
     private var _previousFrame:Int = 0;
@@ -137,6 +138,7 @@ class ExtAnimationSystem
 
         if (owner.animation.curAnim != null)
         {
+            _animationFinished = false;
             _currentAnimation = owner.animation.curAnim.name;
             _currentFrame = owner.animation.frameIndex;
 
@@ -149,6 +151,10 @@ class ExtAnimationSystem
                     if (!holdOnLastFrame && _animationLoopPoints[animName] != null && frameChanged())
                     {
                         new FlxTimer().start(owner.animation.curAnim.delay, _setToLoopFrame, 1);
+                    }
+                    else
+                    {
+                        new FlxTimer().start(owner.animation.curAnim.delay, _setFinished, 1);
                     }
                 }
             }
@@ -169,6 +175,14 @@ class ExtAnimationSystem
     {
         if (owner.animation.curAnim != null)
             owner.animation.curAnim.curFrame = _animationLoopPoints[owner.animation.curAnim.name];
+    }
+
+    /**
+        Timer resolve for ensuring a true frame looping with a custom loop index
+    **/
+    private function _setFinished(timer:FlxTimer):Void
+    {
+        _animationFinished = true;
     }
 
     /**
@@ -237,6 +251,15 @@ class ExtAnimationSystem
         }
 
         return false;
+    }
+
+    /**
+        Checks if the current animation is on its last index
+        @return True if frame index equals last animation frame
+    **/
+    public function isAnimationFinished():Bool
+    {
+        return _animationFinished;
     }
 
     /**

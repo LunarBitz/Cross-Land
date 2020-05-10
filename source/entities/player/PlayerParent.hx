@@ -38,11 +38,13 @@ class Player extends FlxSprite
 
 	// Generals
 	public var canChangeDirections:Bool = false;
+	public var canResetState:Bool = true;
 	public var facingDirection:Int = 1;
 	public var grounded:Bool = false;
 	public var onWall:Int = 0;
 	public var invincibilityTimer:Int = 0;
 	public var hitboxes:Map<String, Hitbox>;
+	public var isAttacking:Bool = false;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
@@ -115,7 +117,7 @@ class Player extends FlxSprite
 
 		grounded = isTouching(FlxObject.DOWN);
 
-		actionSystem.updateTimer(elapsed, !isOnGround());
+		actionSystem.updateTimer(elapsed, !isOnGround() || isAttacking);
 
 		onWall = (isTouching(FlxObject.RIGHT)? 1:0) - (isTouching(FlxObject.LEFT)? 1:0);
 		
@@ -378,13 +380,13 @@ class Player extends FlxSprite
 		var states = player.playerLogic.states;
 		if (states != null)
 		{
-			if ((player.isOnGround()) 
+			if ((player.isOnGround() && canResetState) 
 				&& 
-				(!player.actionSystem.isAnAction([
+				!player.actionSystem.isAnAction([
 					states.Normal, 
 					states.Crouching, 
 					states.Uncrouching]
-				)))
+				))
 			{
 				player.actionSystem.setState(states.Normal);
 			}

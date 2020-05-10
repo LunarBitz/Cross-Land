@@ -1,13 +1,11 @@
 package;
 
 import hazards.enemies.BasicBlob;
-import lime.utils.Assets;
 import entities.terrain.CloudSolid;
 import Debug.DebugOverlay;
 import flixel.util.FlxColor;
 import flixel.FlxObject;
 import flixel.FlxG;
-import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import entities.player.PlayerParent;
 import entities.player.characters.Kholu;
@@ -23,8 +21,6 @@ import hazards.parents.Damager;
 import entities.terrain.Solid;
 import flixel.FlxState;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
-import flixel.tile.FlxTilemap;
-import misc.Hitbox;
 import systems.Hud;
 import misc.background.Parallax;
 import LevelGlobals;
@@ -66,14 +62,14 @@ class PlayState extends FlxState
 		
 		
 		hud = new GameHUD();
-
 		
 
 		if (FlxG.sound.music == null) // don't restart the music if it's already playing
 		{
-			FlxG.sound.playMusic(AssetPaths.ostDusk_Timberlands__ogg, 0.15, true);
+			FlxG.sound.playMusic(AssetPaths.ostDusk_Timberlands__ogg, 0, true);
 			FlxG.sound.music.fadeIn(5, 0, 0.15);
 		}
+
 		var ambienceTrack = FlxG.sound.load(AssetPaths.ambForest__ogg, 0.05);
 		if (ambienceTrack != null) // don't restart the music if it's already playing
 		{
@@ -83,7 +79,7 @@ class PlayState extends FlxState
 	
 		}
 
-		addInOrder();
+		assembleLevel();
 		
 		 
 		super.create();
@@ -92,6 +88,9 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+
+		if (FlxG.keys.justPressed.ESCAPE)
+			lime.app.Application.current.window.close();
 		LevelGlobals.deltaTime = elapsed;
 		LevelGlobals.totalElapsed += elapsed * 1000;
 
@@ -142,7 +141,7 @@ class PlayState extends FlxState
 		Parallax.addElement("back_cloud", AssetPaths.parCloud__png, 458, 98, 0, 19, 1/64, 1/96);
 		
 		Parallax.addElement("mountains", AssetPaths.parMountain2__png, 688, 256, 0, 70, 1/32, 1/92);
-		Parallax.addElement("front_cloud", AssetPaths.parCloud__png, 458, 98, 220, 54, 1/24, 1/24, 0.5);
+		Parallax.addElement("front_cloud", AssetPaths.parCloud__png, 458, 98, 220, 54, 1/24, 1/86, 0.5);
 
 		Parallax.addElement("pine_forest_1", AssetPaths.parPine1__png, 688, 148, 0, 136, 1/16, 1/48);
 		Parallax.addElement("pine_forest_2", AssetPaths.parPine2__png, 688, 199, 0, 196, 1/8, 1/16);
@@ -182,15 +181,18 @@ class PlayState extends FlxState
 		LevelGlobals.mainTiles.follow();
 		LevelGlobals.foregroundTiles.follow();
 
-		// Disable collision for tiles 1-4 since we already established a collision grid
-		LevelGlobals.backgroundTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
-		LevelGlobals.mainTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
-		LevelGlobals.foregroundTiles.setTileProperties(1, FlxObject.NONE, null, null, 318);
-	
+		LevelGlobals.backgroundDecor.follow();
+    	LevelGlobals.mainDecor.follow();
+    	//LevelGlobals.foregroundDecor.follow();
+
 		#if debug
 		LevelGlobals.backgroundTiles.ignoreDrawDebug = true;
 		LevelGlobals.mainTiles.ignoreDrawDebug = true;
 		LevelGlobals.foregroundTiles.ignoreDrawDebug = true;
+
+		LevelGlobals.backgroundDecor.ignoreDrawDebug = true;
+		LevelGlobals.mainDecor.ignoreDrawDebug = true;
+		//LevelGlobals.foregroundDecor.ignoreDrawDebug = true;
 		#end
 		
 		// Get all entities
@@ -211,11 +213,9 @@ class PlayState extends FlxState
 		LevelGlobals.combineGroups(LevelGlobals.allDamagers, [enemies]);
 		LevelGlobals.combineGroups(allAI, [enemies]);
 		
-		
-		
 	}
 
-	private function addInOrder()
+	private function assembleLevel()
 	{
 		add(LevelGlobals.solidsReference);
 		add(LevelGlobals.platformsReference);

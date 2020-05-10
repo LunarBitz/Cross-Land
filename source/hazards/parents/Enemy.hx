@@ -53,8 +53,8 @@ class Enemy extends Damager
     {
         if (hitboxes != null && LevelGlobals.totalElapsed == 0)
         {
-            LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
             LevelGlobals.combineMaps(LevelGlobals.allDamagers, [hitboxes]);  
+            LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
         }
         
         var states = enemyLogic.states;
@@ -70,10 +70,13 @@ class Enemy extends Damager
 
         callStates();
 
-        for (hb in hitboxes)
+        if (hitboxes != null)
         {
-            hb.positionBox("South", "South");
-            hb.followOwner();
+            for (hb in hitboxes)
+            {
+                hb.positionBox("South", "South");
+                hb.followOwner();
+            }
         }
 
         super.update(elapsed);
@@ -84,9 +87,6 @@ class Enemy extends Damager
 
     public function createHitbox(?hitboxName:String = null, ?w:Int = 0, ?h:Int = 0, initialExist:Bool = false) 
     {
-        if (hitboxes == null)
-            hitboxes = new Map<String, Hitbox>();
-
         hitboxes[hitboxName] = new Hitbox(x, y, w, h, initialExist, this);
     }
 
@@ -117,14 +117,11 @@ class Enemy extends Damager
 	**/
 	public function callStates():Void
     {
-        //for (state in Type.allEnums(enemyLogic.states))
-        //{ 
-            var fn = Reflect.field(enemyLogic, "_State_" + Std.string(actionSystem.getState()));
-            if (fn != null)
-            {
-                Reflect.callMethod(enemyLogic, fn, []);
-            }	
-        //}
+        var fn = Reflect.field(enemyLogic, "_State_" + Std.string(actionSystem.getState()));
+        if (fn != null)
+        {
+            Reflect.callMethod(enemyLogic, fn, []);
+        }	
     }
 
     /**
@@ -133,10 +130,8 @@ class Enemy extends Damager
 	public function tickInvincibilityTimer():Void 
     {
         if (invincibilityTimer > 0)
-        {
             invincibilityTimer -= Std.int(LevelGlobals.deltaTime * 1000);
-        }
-
+        
         if (FlxMath.equal(invincibilityTimer, 0.0, 1) || invincibilityTimer < 0)
             invincibilityTimer = 0;
 

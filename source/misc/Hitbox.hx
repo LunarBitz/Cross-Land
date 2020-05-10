@@ -27,14 +27,14 @@ class Hitbox extends Damager
         this.exists = initialExist;
     }
 
-    public function positionBox(face:String = "Bottom", sticky:String = "South") 
+    public function positionBox(from:String = "Bottom", to:String = "South") 
     {
         var originX:Float = 0;
         var originY:Float = 0;
         var targetX:Float = 0;
         var targetY:Float = 0;
 
-        switch (face)
+        switch (from)
         {
             case "Bottom","B","South","S":
                 originX = width/2;
@@ -47,7 +47,7 @@ class Hitbox extends Damager
                 originY = height;
         }
 
-        switch (face)
+        switch (to)
         {
             case "Bottom","B","South","S":
                 targetX = owner.width/2;

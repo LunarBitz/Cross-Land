@@ -14,6 +14,7 @@ class BasicBlob extends Enemy
     {
         super(X, Y);
 
+        hitboxes = new Map<String, Hitbox>();
         createHitbox("Spinning", 36, 26); 
 
         visible = true;
