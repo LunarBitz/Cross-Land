@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxSprite;
 import flixel.math.FlxMath;
 import misc.Hitbox;
 import entities.collectables.parent.Powerup;
@@ -64,7 +65,8 @@ class PlayState extends FlxState
 
 		
 		
-		hud = new GameHUD();
+		hud = new GameHUD(player);
+		LevelGlobals.hudReference = hud;
 		
 
 		if (FlxG.sound.music == null) // don't restart the music if it's already playing
@@ -264,7 +266,9 @@ class PlayState extends FlxState
 			case "basicBlob":
 				enemies.add(new BasicBlob(entity.x, entity.y, 16, 16, player));
 			case "powerup_jumpboost":
-				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, AssetPaths.sprPowerupJumpBoost__png, JumpBoost, 4, 5, 10));
+				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, AssetPaths.sprPowerupJumpBoost__png, JumpBoost, 4, 2, 5));
+			case "powerup_superjumpboost":
+				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, AssetPaths.sprPowerupSuperJumpBoost__png, SuperJumpBoost, 2, 2, 5));
 		}
 	}
 
@@ -272,7 +276,7 @@ class PlayState extends FlxState
 	{
 		if (player.alive && player.exists && collectable.alive && collectable.exists)
 		{
-			hud.updateHUD(collectable.VALUE);
+			hud.updateScore(collectable.VALUE);
 			collectable.kill();
 		}
 	}
@@ -281,6 +285,9 @@ class PlayState extends FlxState
 	{
 		if (player.alive && player.exists && object.alive && object.exists)
 		{
+			if (!player.powerupStack.exists(Std.string(object.power) + "_Graphic"))
+				player.powerupStack[Std.string(object.power) + "_Graphic"] = cast(object, FlxSprite);
+
 			if (!player.powerupStack.exists(Std.string(object.power) + "_Value"))
 				player.powerupStack[Std.string(object.power) + "_Value"] = 1;
 			else
@@ -289,13 +296,17 @@ class PlayState extends FlxState
 
 			player.powerupStack[Std.string(object.power) + "_MaxLifeTime"] = object.maxLifeTime;
 
-			if (!player.powerupStack.exists(Std.string(object.power) + "_Timer"))
+			if (!player.powerupStack.exists(Std.string(object.power) + "_Timer") || player.powerupStack[Std.string(object.power) + "_Timer"] == -1)
 				player.powerupStack[Std.string(object.power) + "_Timer"] = object.maxLifeTime;
 			else
 				player.powerupStack[Std.string(object.power) + "_Timer"] += object.maxLifeTime;
 			
 			var minTimer = FlxMath.minInt(player.powerupStack[Std.string(object.power) + "_Timer"], player.powerupStack[Std.string(object.power) + "_Value"] * object.maxLifeTime);
 			player.powerupStack[Std.string(object.power) + "_Timer"] = Std.int(minTimer);
+
+			if (!LevelGlobals.hudReference.powerupSprites.exists(Std.string(object.power)))
+				LevelGlobals.hudReference.powerupSprites[Std.string(object.power)] = player.powerupStack[Std.string(object.power) + "_Graphic"];
+			LevelGlobals.hudReference.updatePowerElements();
 
 			player.handlePowerups();
 			object.kill();

@@ -370,7 +370,47 @@
       "nodeDisplay": 0,
       "nodeGhost": true,
       "tags": [],
-      "values": []
+      "values": [],
+      "texture": "../images/sprPowerupJumpBoost.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAALpJREFUOI1jYMADBA14/wsa8P7HpwavZsdVCf/vfMdvCCMuzQZVwQwO4l8YGBgYGKLNdjKYWjIwvL/wGUM9Ez7N0WY7GQ685GFYesqd4fRxiBxRzm48GAJ3OjYxvC6AAZiT31/4zHihbS1eizFcgM2pgga8BAMUI9oI8YlyDc2jEUMAXTMM4DKECZ9mWDpgYGDAmRYY8Wk2tYTI4fMO1nSArAiWDmAuQQdYDUD3K77EhOIFZA3YFGNTAwBzPZXhuEHHOwAAAABJRU5ErkJggg=="
+    },
+    {
+      "exportID": "22442551",
+      "name": "powerup_superjumpboost",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": [],
+      "texture": "../images/sprPowerupSuperJumpBoost.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAMFJREFUOI1jYMADeOQN//PIG/7HpwavZlvPdf9Z/+/AawgjLs2GWrUMwmniDAwMDAxbAz4zsCtUMnx5eB5DPRM+zVsDPjO8nfWSwXsDL8PPB+0MBL0Dc3bA+qNwp2MTw+sCGIA5+cvD84znrzXjtRjDBdicyiNvSDBAMaKNEJ8o19A8GjEE0DXDAC5DmPBphqUDBgYGnGmBEZ9mdoVKBgYGBgZ83sGaDpAVwdIBzCXoAKsB6H7Fl5hQvICsAZtibGoA/jCZ0mU/V2kAAAAASUVORK5CYII="
     }
   ],
   "tilesets": [

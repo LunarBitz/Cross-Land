@@ -1,5 +1,6 @@
 package;
 
+import systems.Hud.GameHUD;
 import entities.collectables.parent.Powerup;
 import misc.Hitbox;
 import flixel.tile.FlxTilemap;
@@ -17,6 +18,7 @@ import entities.terrain.CloudSolid;
 
 class LevelGlobals 
 {
+    public static var hudReference:GameHUD;
 
     static public var currentState:FlxState; 
     static public var solidsReference:FlxTypedGroup<Solid>;
@@ -36,6 +38,29 @@ class LevelGlobals
     
     static public var deltaTime:Float = 0;
     static public var totalElapsed:Float = 0;
+
+    static public function init() 
+    {
+        hudReference = new GameHUD(null);
+        currentState = new FlxState(); 
+        solidsReference = new FlxTypedGroup<Solid>();
+        platformsReference = new FlxTypedGroup<CloudSolid>();
+
+        backgroundTiles = new FlxTilemap();
+        mainTiles = new FlxTilemap();
+        foregroundTiles = new FlxTilemap();
+
+        backgroundDecor = new FlxTilemap();
+        mainDecor = new FlxTilemap();
+        foregroundDecor = new FlxTilemap();
+
+        allDamagers = new FlxTypedGroup<Damager>();
+        allHitboxes = new FlxTypedGroup<Hitbox>();
+        allPowerups = new FlxTypedGroup<Powerup>();
+        
+        deltaTime = 0;
+        totalElapsed = 0;
+    }
 
     static public function screenOptimization(object:FlxSprite) 
     {

@@ -14,6 +14,7 @@ import flixel.input.keyboard.FlxKey;
 import entities.player.PlayerLogic;
 import entities.collectables.parent.Powerup;
 import LevelGlobals;
+import systems.Hud;
 
 class Player extends FlxSprite 
 {
@@ -38,7 +39,7 @@ class Player extends FlxSprite
 	public var invincibilityTimer:Int = 0;
 	public var hitboxes:Map<String, Hitbox>;
 	public var isAttacking:Bool = false;
-	public var powerupStack:Map<String, Int>;
+	public var powerupStack:Map<String, Dynamic>;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
@@ -75,7 +76,7 @@ class Player extends FlxSprite
 		playerInput = new InputSystem();
 		playerSfx = new Map<String, FlxSound>();
 
-		powerupStack = new Map<String, Int>();
+		powerupStack = new Map<String, Dynamic>();
 		for (pwr in Type.allEnums(Powerups))
 		{
 			powerupStack[Std.string(pwr) + "_Value"] = 0;
@@ -223,21 +224,24 @@ class Player extends FlxSprite
 						if (powerupStack[Std.string(pwr) + "_Timer"] <= (powerupStack[Std.string(pwr) + "_MaxLifeTime"] * (powerupStack[Std.string(pwr) + "_Value"] - 1)))
 						{
 							powerupStack[Std.string(pwr) + "_Value"] -= 1;
-							#if debug
-							trace('From: ${powerupStack["JumpBoost_Value"] + 1} - To: ${powerupStack["JumpBoost_Value"]}');
-							#end
+							trace(Std.string(pwr) + "- Value: ", powerupStack[Std.string(pwr) + "_Value"]);
+
+							LevelGlobals.hudReference.removePowerElement(LevelGlobals.hudReference.powerupSprites[Std.string(pwr)]);
+							trace("Removing: ", LevelGlobals.hudReference.powerupSprites.remove(Std.string(pwr)));
+							LevelGlobals.hudReference.updatePowerElements();
+
 							handlePowerups();
 						}
 					}
-					else if (powerupStack[Std.string(pwr) + "_Timer"] < 0)
-						powerupStack[Std.string(pwr) + "_Timer"] = 0;
-
-					if (powerupStack[Std.string(pwr) + "_Timer"] == 0)
+					else if (powerupStack[Std.string(pwr) + "_Timer"] < 0 && powerupStack[Std.string(pwr) + "_Timer"] != -1)
 					{
 						powerupStack[Std.string(pwr) + "_Value"] = 0;
 						handlePowerups();
+						powerupStack[Std.string(pwr) + "_Timer"] = -1;
 					}
-				}			
+				}	
+
+				
 			}
 		}
 	}
