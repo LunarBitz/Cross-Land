@@ -1,9 +1,11 @@
 package entities.player.characters;
 
+import flixel.system.FlxSound;
+import entities.collectables.parent.Powerup;
+import misc.Hitbox;
 import flixel.math.FlxPoint;
 import flixel.math.FlxAngle;
 import Debug.DebugOverlay;
-import systems.PixelSensor;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil.LineStyle;
 import flixel.animation.FlxAnimation;
@@ -26,24 +28,28 @@ import entities.player.PlayerParent;
 
 class Kholu extends Player 
 {
-
-	/**
-		Read about how inheritance based objects are inferior to composition based ones. 
-		I could switch from inheritance to composition by setting up the base class as a 
-			variable like how i've done with the logic, action system, and input system 
-			below.
-	**/
-
-	override public function new(?X:Float = 0, ?Y:Float = 0) 
+	override public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(X, Y);
+
+		hitboxes = new Map<String, Hitbox>();
+		createHitbox("tailwhip", 40, 32, true);
 
 		// Set up the needed custom systems
 		playerLogic = new KholuStateLogics(this);
 		actionSystem = new ActionSystem(Normal);
-		actionSystem.setDelay(50);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
+		playerSfx = new Map<String, FlxSound>();
+
+		powerupStack = new Map<String, Int>();
+		for (pwr in Type.allEnums(Powerups))
+		{
+			powerupStack[Std.string(pwr) + "_Value"] = 0;
+			powerupStack[Std.string(pwr) + "_Timer"] = 0;
+			powerupStack[Std.string(pwr) + "_MaxLifeTime"] = 0;
+		}
+	
 
 		gatherInputs();
 
@@ -63,12 +69,13 @@ class Kholu extends Player
 		centerOrigin();
 
 		gatherAnimations();
+
+		gatherSounds();
 		
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
 
 		grounded = false;
-		//playerAnimation.setAnimation("idle_normal");
 	}
 
 	override function update(elapsed:Float) 
@@ -77,13 +84,15 @@ class Kholu extends Player
 		#if debug
 		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
-		//DebugOverlay.watchValue("Jumps", currentJumpCount);
-		//DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
+		DebugOverlay.watchValue("Jumps", currentJumpCount);
+		DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
 		//DebugOverlay.watchValue("On Wall", onWall);
 		//DebugOverlay.watchValue("Action Buffer", Std.int(actionSystem.delayTimer));
-		DebugOverlay.watchValue("Player Health", Std.int(health));
-		DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));
+		//DebugOverlay.watchValue("Player Health", Std.int(health));
+		//DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));		
 		#end
+
+		alpha = (invincibilityTimer>0)? (0.35 + (0.35 * invincibilityTimer%5)): 1;
 
 		// We're updating from PlayerLogix.hx bois
 		super.update(elapsed);
@@ -101,10 +110,20 @@ class Kholu extends Player
 		playerInput.bindInput("up", [FlxKey.UP]);
 		playerInput.bindInput("jump", [FlxKey.Z]);
 		playerInput.bindInput("crouch", [FlxKey.DOWN]);
-		playerInput.bindAxis("horizontalAxis", "left", "right");
+		playerInput.bindInput("attack_1", [FlxKey.X]);
 
-		playerInput.bindInput("push", [FlxKey.V]);
-    }
+		playerInput.bindAxis("horizontalAxis", "left", "right");
+	}
+	
+	override private function gatherSounds():Void
+	{
+		playerSfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
+		playerSfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
+		playerSfx["longer_jump"] = FlxG.sound.load(AssetPaths.sndLongerJumping__wav, 0.15);
+		playerSfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
+		playerSfx["swish_1"] = FlxG.sound.load(AssetPaths.sndSwish1__wav, 0.35);
+		
+	}
 	
 	/**
 		Helper to add all animations of the player
@@ -134,7 +153,7 @@ class Kholu extends Player
 		playerAnimation.createAnimation("climbing_front", [73,74,75,76], 20, true);
 		playerAnimation.createAnimation("climbed_front", [77], 20, false);
 		playerAnimation.createAnimation("climbed_side", [78], 20, false);
-		playerAnimation.createAnimation("tail_whip_R-L", [79,80,81,82], 20, false);
+		playerAnimation.createAnimation("tail_whip_R-L", [79,80,81,82,79,80,81,82], 25, false);
 		playerAnimation.createAnimation("punch_slam_ground", [83,84,85,86,87,88], 20, false);
 		playerAnimation.createAnimation("right_punch", [89,90,91,92], 20, false);
 		playerAnimation.createAnimation("left_punch", [93,94,95,96], 20, false);
@@ -171,7 +190,7 @@ class Kholu extends Player
 		playerAnimation.createAnimation("mechaball_roll_wall_NE", [196,197,198,199], 20, true);
 		playerAnimation.createAnimation("mechaball_roll_wall_E", [200,201,202,203], 20, true);
 		playerAnimation.createAnimation("mechaball_roll_floor_E", [204,205,206,207], 20, true);
-		playerAnimation.createAnimation("critically_damaged", [208,209,210,211], 20, true);
+		playerAnimation.createAnimation("critically_damaged", [208,209,210,211], 5, true);
 		playerAnimation.createAnimation("climbing_sides", [212,213,214,215,214,213,212], 20, true);
 		playerAnimation.createAnimation("ledge_hanging_sides", [216], 20, false);
 		playerAnimation.createAnimation("arm_swing_midair_down", [217,218,219,220,221], 20, false);

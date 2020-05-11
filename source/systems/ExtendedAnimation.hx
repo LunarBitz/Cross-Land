@@ -7,6 +7,7 @@ class ExtAnimationSystem
 {
     var owner:FlxSprite;
 
+    private var _animationFinished:Bool = false;
 	private var _previousAnimation:String = "";
     private var _currentAnimation:String = "";
     private var _previousFrame:Int = 0;
@@ -124,6 +125,7 @@ class ExtAnimationSystem
         @param animName The string name of the animation you want to play.
         @param forcePlay Whether to force the animation to restart.
         @param playReversed Whether to play animation backwards or not.
+        @param specialLoop Whether to loop the animation in a special way (Very important for custom loops and holding animations).
         @param startingFrame The frame number in the animation you want to start from. If a negative value is passed, a random frame is used.
         @param holdOnLastFrame Whether to pause the animation on the last frame.
     **/
@@ -136,6 +138,7 @@ class ExtAnimationSystem
 
         if (owner.animation.curAnim != null)
         {
+            _animationFinished = false;
             _currentAnimation = owner.animation.curAnim.name;
             _currentFrame = owner.animation.frameIndex;
 
@@ -148,6 +151,10 @@ class ExtAnimationSystem
                     if (!holdOnLastFrame && _animationLoopPoints[animName] != null && frameChanged())
                     {
                         new FlxTimer().start(owner.animation.curAnim.delay, _setToLoopFrame, 1);
+                    }
+                    else
+                    {
+                        new FlxTimer().start(owner.animation.curAnim.delay, _setFinished, 1);
                     }
                 }
             }
@@ -168,6 +175,36 @@ class ExtAnimationSystem
     {
         if (owner.animation.curAnim != null)
             owner.animation.curAnim.curFrame = _animationLoopPoints[owner.animation.curAnim.name];
+    }
+
+    /**
+        Timer resolve for ensuring a true frame looping with a custom loop index
+    **/
+    private function _setFinished(timer:FlxTimer):Void
+    {
+        _animationFinished = true;
+    }
+
+    /**
+        Returns the current animation as a string
+        @return Current animation name
+    **/
+	public function getLoopFrame():Int
+    {
+        return _animationLoopPoints[owner.animation.curAnim.name];
+    }
+
+    /**
+        Returns the current animation as a string
+        @return Current animation name
+    **/
+	public function hasPassedLoopFrame():Bool
+    {
+        if (owner.animation.curAnim != null)
+        {
+            return owner.animation.curAnim.curFrame >= _animationLoopPoints[owner.animation.curAnim.name];
+        }
+        return false;
     }
 
     /**
@@ -196,7 +233,7 @@ class ExtAnimationSystem
     {
         if (owner.animation.curAnim != null)
         {
-            return (owner.animation.frameIndex == owner.animation.curAnim.frames[0]);
+            return (owner.animation.curAnim.curFrame == 0);
         }
 
         return false;
@@ -210,11 +247,19 @@ class ExtAnimationSystem
     {
         if (owner.animation.curAnim != null)
         {
-            var i = owner.animation.curAnim.frames.length - 1;
-            return (owner.animation.frameIndex == owner.animation.curAnim.frames[i]);
+            return (owner.animation.curAnim.curFrame == owner.animation.curAnim.frames.length - 1);
         }
 
         return false;
+    }
+
+    /**
+        Checks if the current animation is on its last index
+        @return True if frame index equals last animation frame
+    **/
+    public function isAnimationFinished():Bool
+    {
+        return _animationFinished;
     }
 
     /**

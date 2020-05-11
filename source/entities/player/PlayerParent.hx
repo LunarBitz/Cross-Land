@@ -1,17 +1,10 @@
 package entities.player;
 
+import flixel.system.FlxSound;
+import misc.Hitbox;
 import hazards.parents.Damager;
-import systems.PixelSensor;
-import flixel.util.FlxColor;
-import flixel.FlxBasic;
-import flixel.animation.FlxAnimation;
-import haxe.CallStack.StackItem;
-import flixel.system.debug.watch.Watch;
-import flixel.system.FlxSplash;
-import haxe.macro.Expr.Case;
 import flixel.math.FlxMath;
 import flixel.FlxG;
-import systems.Hud;
 import flixel.FlxSprite;
 import flixel.FlxObject;
 import systems.ExtendedAnimation;
@@ -19,6 +12,9 @@ import systems.Action;
 import systems.Input;
 import flixel.input.keyboard.FlxKey;
 import entities.player.PlayerLogic;
+import entities.collectables.parent.Powerup;
+import LevelGlobals;
+import systems.Hud;
 
 class Player extends FlxSprite 
 {
@@ -27,6 +23,7 @@ class Player extends FlxSprite
 	public var actionSystem:ActionSystem;
 	public var playerAnimation:ExtAnimationSystem;
 	public var playerInput:InputSystem;
+	public var playerSfx:Map<String, FlxSound>;
 
 	// Input
 	public var DEAD_ZONE(default, never):Float = 0.1;
@@ -34,10 +31,16 @@ class Player extends FlxSprite
 
 	// Generals
 	public var canChangeDirections:Bool = false;
+	public var canResetState:Bool = true;
+	public var inputDirection:Int = 0;
 	public var facingDirection:Int = 1;
 	public var grounded:Bool = false;
 	public var onWall:Int = 0;
 	public var invincibilityTimer:Int = 0;
+	public var hitboxes:Map<String, Hitbox>;
+	public var isAttacking:Bool = false;
+	public var powerupStack:Map<String, Dynamic>;
+	public var hasWonStage:Bool = false;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
@@ -52,27 +55,35 @@ class Player extends FlxSprite
 	
 	// Jumping
 	public var JUMP_SPEED:Float = -350;
+	public var JUMP_ADDER:Float = 0;
 	public var currentJumpCount:Int = 0;
 	public var maxJumpCount:Int = 3;
-	private var jumpBufferTimer:Float = 0;
-	private var jumpBufferFrames:Int = 150;
+	public var jumpBufferTimer:Float = 0;
+	public var jumpBufferFrames:Int = 125;
 	
-	
-
-	public var _solidsRef:Dynamic;
-
-	private var timePassed:Float = 0;
 
 
 	public function new(?X:Float = 0, ?Y:Float = 0) 
 	{
 		super(X, Y);
 
+		hitboxes = new Map<String, Hitbox>();
+		//createHitbox("Sliding", 64, 16, true); 
+
 		// Set up the needed custom systems
 		playerLogic = new PlayerStateLogics(this);
 		actionSystem = new ActionSystem(playerLogic.states.Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
+		playerSfx = new Map<String, FlxSound>();
+
+		powerupStack = new Map<String, Dynamic>();
+		for (pwr in Type.allEnums(Powerups))
+		{
+			powerupStack[Std.string(pwr) + "_Value"] = 0;
+			powerupStack[Std.string(pwr) + "_Timer"] = 0;
+			powerupStack[Std.string(pwr) + "_MaxLifeTime"] = 0;
+		}
 
 		gatherInputs();
 
@@ -91,6 +102,8 @@ class Player extends FlxSprite
 
 		gatherAnimations();
 
+		gatherSounds();
+
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
 		
@@ -98,15 +111,29 @@ class Player extends FlxSprite
 
 	override function update(elapsed:Float) 
 	{
+		if (health <= 0 && actionSystem.isAnAction([playerLogic.states.Normal]))
+		{
+			actionSystem.setState(playerLogic.states.Dead);
+		}
+
+		if (hitboxes != null && LevelGlobals.totalElapsed == 0)
+		{
+			LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
+			LevelGlobals.combineMaps(LevelGlobals.allDamagers, [hitboxes]);  
+			LevelGlobals.combineMaps(LevelGlobals.allHitboxes, [hitboxes]);  
+		}
+		
 		// Set up nicer input-handling for movement.
 		playerInput.poll();
 
 		grounded = isTouching(FlxObject.DOWN);
 
-		actionSystem.updateTimer(elapsed, !isOnGround());
+		actionSystem.updateTimer(elapsed, !isOnGround() || isAttacking);
 
 		onWall = (isTouching(FlxObject.RIGHT)? 1:0) - (isTouching(FlxObject.LEFT)? 1:0);
-		
+
+		tickPowerupTimers();
+
 		// Update facing direction
 		updateDirection();
 
@@ -118,8 +145,13 @@ class Player extends FlxSprite
 		// Apply velocity
 		updateVelocity();
 
-		timePassed += elapsed;
 		super.update(elapsed);
+
+		for (hb in hitboxes)
+		{
+			hb.positionBox("South", "South");
+			hb.followOwner();
+		}
 	}
 
 	/**
@@ -157,6 +189,14 @@ class Player extends FlxSprite
 		animation.add("uncrouching", [6, 5, 4, 3, 2, 1], 45, false);
 	}
 
+	private function gatherSounds():Void
+	{
+		playerSfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
+		playerSfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
+		playerSfx["longer_jump"] = FlxG.sound.load(AssetPaths.sndLongerJumping__wav, 0.15);
+		playerSfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
+	}
+
 	/**
 		Function to handle what happens with each action state.
 		See `[xx]Logic.hx`
@@ -171,6 +211,58 @@ class Player extends FlxSprite
 				Reflect.callMethod(playerLogic, fn, []);
 			}	
 		}
+	}
+
+	private function tickPowerupTimers() 
+	{
+		if (powerupStack != null)
+		{
+			for (pwr in Type.allEnums(Powerups))
+			{
+				if (powerupStack.exists(Std.string(pwr) + "_Value") &&
+					powerupStack.exists(Std.string(pwr) + "_Timer") &&
+					powerupStack.exists(Std.string(pwr) + "_MaxLifeTime"))
+				{
+					if (powerupStack[Std.string(pwr) + "_Timer"] > 0)
+					{
+						powerupStack[Std.string(pwr) + "_Timer"] -= Std.int(FlxG.elapsed * 1000);
+
+						if (powerupStack[Std.string(pwr) + "_Timer"] <= (powerupStack[Std.string(pwr) + "_MaxLifeTime"] * (powerupStack[Std.string(pwr) + "_Value"] - 1)))
+						{
+							powerupStack[Std.string(pwr) + "_Value"] -= 1;
+							trace(Std.string(pwr) + "- Value: ", powerupStack[Std.string(pwr) + "_Value"]);
+
+							LevelGlobals.hudReference.removePowerElement(LevelGlobals.hudReference.powerupSprites[Std.string(pwr)]);
+							trace("Removing: ", LevelGlobals.hudReference.powerupSprites.remove(Std.string(pwr)));
+							LevelGlobals.hudReference.updatePowerElements();
+
+							handlePowerups();
+						}
+					}
+					else if (powerupStack[Std.string(pwr) + "_Timer"] < 0 && powerupStack[Std.string(pwr) + "_Timer"] != -1)
+					{
+						powerupStack[Std.string(pwr) + "_Value"] = 0;
+						handlePowerups();
+						powerupStack[Std.string(pwr) + "_Timer"] = -1;
+					}
+				}	
+
+				
+			}
+		}
+	}
+
+	public function handlePowerups() 
+	{
+		JUMP_ADDER = ((JUMP_SPEED / 8) * (powerupStack.exists("JumpBoost_Value")? powerupStack["JumpBoost_Value"]:0)) + 
+					 ((JUMP_SPEED / 4) * (powerupStack.exists("SuperJumpBoost_Value")? powerupStack["SuperJumpBoost_Value"]:0)) + 
+					 ((JUMP_SPEED / 2) * (powerupStack.exists("MegaJumpBoost_Value")? powerupStack["MegaJumpBoost_Value"]:0));
+					 
+	}
+
+	public function createHitbox(?hitboxName:String = null, ?w:Int = 0, ?h:Int = 0, initialExist:Bool = false) 
+	{
+		hitboxes[hitboxName] = new Hitbox(x, y, w, h, initialExist, this);
 	}
 
 	/**
@@ -189,10 +281,13 @@ class Player extends FlxSprite
 	**/
 	private function updateDirection():Void
 	{
-		facingDirection = getMoveDirectionCoefficient(playerInput.getAxis("horizontalAxis"));
+		inputDirection = getMoveDirectionCoefficient(playerInput.getAxis("horizontalAxis"));
 
-		if (facingDirection != 0 && canChangeDirections)
-			facing = (facingDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
+		if (inputDirection != 0 && canChangeDirections)
+		{
+			facing = (inputDirection == -1)? FlxObject.LEFT : FlxObject.RIGHT;
+			facingDirection = inputDirection;
+		}
 	}
 
 	/**
@@ -229,18 +324,65 @@ class Player extends FlxSprite
 			// Follow through with jump if jump buffer is within frames
 			if (jumpBufferTimer < jumpBufferFrames)
 			{
+				playerSfx["jump"].play(true);
+				if (powerupStack != null)
+				{
+					if (powerupStack["SuperJumpBoost_Value"] > 0 || powerupStack["MegaJumpBoost_Value"] > 0 || powerupStack["JumpBoost_Value"] >= 3)
+					{
+						playerSfx["longer_jump"].play(true);
+						playerSfx["longer_jump"].fadeIn(0.25, 0, 0.35);
+					}
+					else if (powerupStack["JumpBoost_Value"] < 3 && powerupStack["JumpBoost_Value"] != 0)
+					{
+						playerSfx["long_jump"].play(true);
+						playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
+					}
+				}
+
 				currentJumpCount--;
-				velocity.y = JUMP_SPEED;
+				velocity.y = JUMP_SPEED + JUMP_ADDER;
 				jumpBufferTimer = jumpBufferFrames;
 
 				#if debug
-				trace('Jump() || Buffer Jumping - Time:${timePassed}');
+				trace('Jump() || Buffer Jumping - Time:${LevelGlobals.totalElapsed}');
 				#end
 			}
 		}
-		else 
+		else if (!isOnGround())
 		{
-			if (currentJumpCount == maxJumpCount) { currentJumpCount--; }
+			// Follow through with jump if jump buffer is within frames
+			if (jumpBufferTimer < jumpBufferFrames)
+			{
+				if (currentJumpCount > 0)
+				{
+					playerSfx["jump"].play(true);
+					if (powerupStack != null)
+					{
+						if (powerupStack["SuperJumpBoost_Value"] > 0 || powerupStack["MegaJumpBoost_Value"] > 0 || powerupStack["JumpBoost_Value"] >= 3)
+						{
+							playerSfx["longer_jump"].play(true);
+							playerSfx["longer_jump"].fadeIn(0.25, 0, 0.35);
+						}
+						else if (powerupStack["JumpBoost_Value"] < 3 && powerupStack["JumpBoost_Value"] != 0)
+						{
+							playerSfx["long_jump"].play(true);
+							playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
+						}
+					}
+
+					currentJumpCount--;
+					velocity.y = JUMP_SPEED + JUMP_ADDER;
+					jumpBufferTimer = jumpBufferFrames;
+
+					#if debug
+					trace('Jump() || Buffer Jumping - Time:${LevelGlobals.totalElapsed}');
+					#end
+				}
+			}
+			else if (jumpBufferTimer >= jumpBufferFrames)
+			{
+				if (currentJumpCount == maxJumpCount) { currentJumpCount--; jumpBufferTimer = jumpBufferFrames;}
+			}		
 		}
 
 		if (playerInput.isInputDown("jump_just_pressed"))
@@ -251,11 +393,26 @@ class Player extends FlxSprite
 			// Only jump if the player has jumps left
 			if (currentJumpCount > 0)
 			{
+				playerSfx["jump"].play(true);
+				if (powerupStack != null)
+				{
+					if (powerupStack["SuperJumpBoost_Value"] > 0 || powerupStack["MegaJumpBoost_Value"] > 0 || powerupStack["JumpBoost_Value"] >= 3)
+					{
+						playerSfx["longer_jump"].play(true);
+						playerSfx["longer_jump"].fadeIn(0.25, 0, 0.35);
+					}
+					else if (powerupStack["JumpBoost_Value"] < 3 && powerupStack["JumpBoost_Value"] != 0)
+					{
+						playerSfx["long_jump"].play(true);
+						playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
+					}
+				}
+
 				currentJumpCount--;
-				velocity.y = JUMP_SPEED;
+				velocity.y = JUMP_SPEED + JUMP_ADDER;
 
 				#if debug
-				trace('Jump() || Pressed Jump - Time:${timePassed}');
+				trace('Jump() || Pressed Jump - Time:${LevelGlobals.totalElapsed}');
 				#end
 			}	
 		}
@@ -265,7 +422,22 @@ class Player extends FlxSprite
 		// Holding = max jump height
 		if (velocity.y < 0 && !playerInput.isInputDown("jump"))
 		{
-			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
+			if (playerSfx["long_jump"].playing)
+			{
+				playerSfx["long_jump"].fadeOut(0.1, 0);
+				if (playerSfx["long_jump"].volume == 0)
+					playerSfx["long_jump"].stop();
+			}
+		
+			if (playerSfx["longer_jump"].playing)
+			{
+				playerSfx["longer_jump"].fadeOut(0.5, 0);
+				if (playerSfx["longer_jump"].volume == 0)
+					playerSfx["longer_jump"].stop();
+			}
+				
+
+			velocity.y = Math.max(velocity.y, (JUMP_SPEED + JUMP_ADDER) / 3);
 		}
 
 		jumpBufferTimer += FlxG.elapsed * 1000; // Increase buffer
@@ -327,7 +499,7 @@ class Player extends FlxSprite
 	**/
 	public function willCollide(xVelocity:Float, yVelocity:Float):Bool
 	{
-		return overlapsAt(x + (xVelocity * FlxG.elapsed), y + (yVelocity * FlxG.elapsed), _solidsRef);		
+		return overlapsAt(x + (xVelocity * FlxG.elapsed), y + (yVelocity * FlxG.elapsed), LevelGlobals.solidsReference);		
 	}
 
 	/**
@@ -340,13 +512,13 @@ class Player extends FlxSprite
 		var states = player.playerLogic.states;
 		if (states != null)
 		{
-			if ((player.isOnGround()) 
+			if ((player.isOnGround() && canResetState &&!hasWonStage) 
 				&& 
-				(!player.actionSystem.isAnAction([
+				!player.actionSystem.isAnAction([
 					states.Normal, 
 					states.Crouching, 
 					states.Uncrouching]
-				)))
+				))
 			{
 				player.actionSystem.setState(states.Normal);
 			}
@@ -360,7 +532,7 @@ class Player extends FlxSprite
 	**/
 	public function resolveWallCollision(player:Player, other:FlxSprite):Void
 	{
-		player.onWall = -player.facingDirection;
+		player.onWall = -player.inputDirection;
 	}
 
 	/**
@@ -368,25 +540,40 @@ class Player extends FlxSprite
 		@param player Object that collided with something.
 		@param other Object that `player` has collided with.
 	**/
-	public function resolveDamagerCollision(player:Player, other:Damager):Void
+	public static function resolveDamagerCollision(player:Player, other:Damager):Void
 	{
 		var states = player.playerLogic.states;
-		var dir = (facing == FlxObject.LEFT)? -1 : 1;
 
 		if (player.alive && player.exists && other.alive && other.exists)
 		{
-			if (player.invincibilityTimer == 0)
+			// Exit function if hitbox collides with its owner
+			if (Type.getClass(other) == Hitbox)
 			{
+				if (cast(other, Hitbox).owner == player) { return; }
+			}
+
+			if (player.invincibilityTimer == 0 && other.canInflictDamage && !player.isAttacking)
+			{
+				FlxG.camera.shake(0.005, 0.2);
+
+				player.facingDirection = FlxMath.signOf(other.x - player.x);
+
 				player.invincibilityTimer = 1500;
 
 				player.health -= other.damgeValue;
-				player.setHorizontalMovement(player.IN_AIR_TARGET_SPEED, -dir, 1);
+				player.setHorizontalMovement(player.IN_AIR_TARGET_SPEED, -player.facingDirection, 1);
 				player.velocity.y = player.JUMP_SPEED / 3;
 				
 				player.actionSystem.setState(states.Damaged);
 			}
 		}
 	}
+
+	public static function setVictory(player:Player, other:FlxSprite):Void
+	{
+		player.actionSystem.setState(player.playerLogic.states.Victory);
+	}
+	
 
 	
 

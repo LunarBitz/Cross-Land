@@ -5,7 +5,6 @@ class ActionSystem
 	var previousState:Dynamic = null;
 	var currentState:Dynamic = null;
 	public var delayTimer:Float = 0;
-	public var delayThreshold:Int = 0;
 
 	public function new(?defaultAction:Dynamic = null) 
 	{
@@ -25,19 +24,12 @@ class ActionSystem
 	/**
 		Update the previous and current state
 		@param newState Desired state to change to
+		@param delay Delay time in milliseconds 
 		@return Current state
 	**/
-	public function setState(newState:Dynamic, ?useDelay:Bool = false):Dynamic
+	public function setState(newState:Dynamic, ?delay:Float = 0):Dynamic
 	{
-		if (useDelay)
-		{
-			if (delayTimer >= delayThreshold)
-			{
-				previousState = currentState;
-				currentState = newState;
-			}
-		}
-		else
+		if (delayTimer >= delay)
 		{
 			previousState = currentState;
 			currentState = newState;
@@ -83,13 +75,16 @@ class ActionSystem
 
 	/**
 		Update the delay threshold  for actions setting that utilizes it
-		@param milliseconds Max time for delayed triggering in milliseconds (1000 = 1 second)
-		@return New delay value
+		@param dT Change value that increments `delayTimer`
+		@param condition Boolean that allows increments or resets (Set **True** to increment only)
 	**/
-	public function setDelay(?milliseconds:Int = 0):Int
+	public function updateTimer(dT:Float, ?condition:Bool):Void
 	{
-		delayThreshold = Std.int(Math.max(0, milliseconds));
-		return delayThreshold;
+		if (condition)
+			this.delayTimer += dT * 1000;
+		else 
+			this.delayTimer = 0;
+		
 	}
 
 	/**
@@ -97,12 +92,9 @@ class ActionSystem
 		@param dT Change value that increments `delayTimer`
 		@param condition Boolean that allows increments or resets (Set **True** to increment only)
 	**/
-	public function updateTimer(dT:Float, ?condition:Bool = false):Void
+	public function resetTimer():Void
 	{
-		if (condition)
-			delayTimer += dT * 1000;
-		else 
-			delayTimer = 0;
+		this.delayTimer = 0;
 	}
     
 }
