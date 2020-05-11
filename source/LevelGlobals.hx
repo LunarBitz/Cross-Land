@@ -1,5 +1,7 @@
 package;
 
+import flixel.system.FlxSound;
+import misc.VictoryBox;
 import systems.Hud.GameHUD;
 import entities.collectables.parent.Powerup;
 import misc.Hitbox;
@@ -18,6 +20,8 @@ import entities.terrain.CloudSolid;
 
 class LevelGlobals 
 {
+    public static var ambienceTrack:FlxSound;
+
     public static var hudReference:GameHUD;
 
     static public var currentState:FlxState; 
@@ -35,12 +39,16 @@ class LevelGlobals
     public static var allDamagers:FlxTypedGroup<Damager>;
     public static var allHitboxes:FlxTypedGroup<Hitbox>;
     public static var allPowerups:FlxTypedGroup<Powerup>;
+
+    public static var allGoals:FlxTypedGroup<VictoryBox>;
     
     static public var deltaTime:Float = 0;
     static public var totalElapsed:Float = 0;
 
     static public function init() 
     {
+        FlxG.sound.music = null;
+        ambienceTrack = new FlxSound();
         hudReference = new GameHUD(null);
         currentState = new FlxState(); 
         solidsReference = new FlxTypedGroup<Solid>();
@@ -57,6 +65,8 @@ class LevelGlobals
         allDamagers = new FlxTypedGroup<Damager>();
         allHitboxes = new FlxTypedGroup<Hitbox>();
         allPowerups = new FlxTypedGroup<Powerup>();
+
+        allGoals = new FlxTypedGroup<VictoryBox>();
         
         deltaTime = 0;
         totalElapsed = 0;

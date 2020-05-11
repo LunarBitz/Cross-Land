@@ -19,6 +19,8 @@ enum PlayerStates
     Walljumping;
     Hurt;
     Tailwhip_R_L;
+    Victory;
+    Dead;
 }
 
 class KholuStateLogics extends PlayerStateLogics
@@ -397,6 +399,120 @@ class KholuStateLogics extends PlayerStateLogics
 
             //if (owner.playerAnimation.)
         }
+        // #endregion
+    }
+
+    override public function _State_Victory() 
+    {
+        // #region Basics 
+        // Facing Direction
+        owner.canChangeDirections = false;
+        owner.canResetState = false;
+        owner.isAttacking = false;
+
+        owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on xSpeed only
+
+        // Horizontal Movement
+        owner.setHorizontalMovement(0, owner.facingDirection, 1/64);
+
+        // Vertical Movement
+        owner.scaleGravity(0.85, 0.65);
+        // #endregion
+
+        // #region Logic 
+        owner.hasWonStage = true;
+
+        if (FlxG.sound.music != null) // don't restart the music if it's already playing
+        {
+            FlxG.sound.music.fadeOut(1, 0);
+            LevelGlobals.ambienceTrack.fadeOut(1, 0);
+        }
+
+        new flixel.util.FlxTimer().start(3, 
+            function(_)
+            {
+                LevelGlobals.hudReference.clear();
+                LevelGlobals.hudReference.drawVictory();
+                owner.actionSystem.setState(Null);
+            }
+        , 1);
+        
+        
+        // #endregion
+
+        // #region Animations
+        if (owner.isOnGround())
+            {
+                if (owner.playerAnimation.isAnAnimation(["idle_normal", "walking", "running", "sprinting"]))
+                {
+                    var xX = Math.floor(Math.abs(owner.velocity.x));
+    
+                    if (xX <= 3)
+                        owner.playerAnimation.setAnimation("idle_normal");
+                    else if (xX > 3 && xX <= 60)
+                        owner.playerAnimation.setAnimation("walking");
+                    else if (xX > 60 && xX <= 120)
+                        owner.playerAnimation.setAnimation("running");
+                    else if (xX > 120)
+                        owner.playerAnimation.setAnimation("sprinting");
+    
+                    owner.animation.getByName("walking").frameRate = Math.round(((xX + 0.1) / 40) * 10);
+                }
+            }
+    
+            // Only allow an animation change if there has been a state change
+            if (owner.actionSystem.hasChanged())
+            {
+                // To uncrouching animation if previously crouching
+                owner.playerAnimation.transition("uncrouching", "idle_normal");
+    
+                // To uncrouching animation if previously crouching
+                owner.playerAnimation.transition("jumping", "idle_normal");
+                owner.playerAnimation.transition("jump_fall", "idle_normal");
+                owner.playerAnimation.transition("idle_walljumping", "idle_normal");
+                owner.playerAnimation.transition("damaged_frontside", "idle_normal");
+                owner.playerAnimation.transition("tail_whip_R-L", "idle_normal");
+            }
+            // #endregion
+    }
+
+    override public function _State_Dead() 
+    {
+        // #region Basics 
+        // Facing Direction
+        owner.canChangeDirections = false;
+        owner.canResetState = false;
+        owner.isAttacking = false;
+
+        owner.invincibilityTimer = 500;
+
+        owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on xSpeed only
+
+        // Horizontal Movement
+        owner.setHorizontalMovement(0, owner.facingDirection, 1/16);
+
+        // Vertical Movement
+        owner.scaleGravity(0.85, 0.65);
+        // #endregion
+
+        // #region Logic 
+        if (FlxG.sound.music != null) // don't restart the music if it's already playing
+        {
+            FlxG.sound.music.fadeOut(1, 0);
+            LevelGlobals.ambienceTrack.fadeOut(1, 0);
+        }
+
+        new flixel.util.FlxTimer().start(3, 
+            function(_)
+            {
+                LevelGlobals.hudReference.clickReplay();
+            }
+        , 1);
+        // #endregion
+
+        // #region Animations
+        if (owner.actionSystem.hasChanged())
+            owner.playerAnimation.setAnimation("critically_damaged", false, false, true, 0, false);
         // #endregion
     }
 }

@@ -16,7 +16,7 @@ class Hitbox extends Damager
         super(X, Y);
 
         owner = newOwner;
-        makeGraphic(newWidth, newHeight, 0x808D39CF);
+        makeGraphic(newWidth, newHeight, 0x00000000);
 
         damgeValue = 15;
 

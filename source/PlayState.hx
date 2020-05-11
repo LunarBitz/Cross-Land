@@ -14,6 +14,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import entities.player.PlayerParent;
 import entities.player.characters.Kholu;
 import entities.launchers.Cannon;
+import misc.VictoryBox;
 
 import entities.collectables.Coin;
 import entities.collectables.Gem;
@@ -75,13 +76,13 @@ class PlayState extends FlxState
 			FlxG.sound.playMusic(AssetPaths.ostDusk_Timberlands__ogg, 0, true);
 			FlxG.sound.music.fadeIn(5, 0, 0.15);
 		}
-
-		var ambienceTrack = FlxG.sound.load(AssetPaths.ambForest__ogg, 0.05);
-		if (ambienceTrack != null) // don't restart the music if it's already playing
+		
+		LevelGlobals.ambienceTrack = FlxG.sound.load(AssetPaths.ambForest__ogg, 0.05);
+		if (LevelGlobals.ambienceTrack != null) // don't restart the music if it's already playing
 		{
-			ambienceTrack.looped = true;
-			ambienceTrack.play();
-			ambienceTrack.fadeIn(5, 0, 0.05);
+			LevelGlobals.ambienceTrack.looped = true;
+			LevelGlobals.ambienceTrack.play();
+			LevelGlobals.ambienceTrack.fadeIn(5, 0, 0.05);
 	
 		}
 
@@ -140,6 +141,9 @@ class PlayState extends FlxState
 		{
 			FlxG.overlap(player, LevelGlobals.allPowerups, resolvePowerupOverlap);
 		}
+
+		FlxG.overlap(player, LevelGlobals.allGoals, Player.setVictory);
+		
 
 		
 
@@ -244,6 +248,8 @@ class PlayState extends FlxState
 		add(player);
 		add(LevelGlobals.foregroundTiles);
 
+		add(LevelGlobals.allGoals);
+
 		add(hud);
 		add(new DebugOverlay());
 	}
@@ -267,6 +273,8 @@ class PlayState extends FlxState
 				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, AssetPaths.sprPowerupJumpBoost__png, JumpBoost, 4, 2, 5));
 			case "powerup_superjumpboost":
 				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, AssetPaths.sprPowerupSuperJumpBoost__png, SuperJumpBoost, 2, 2, 5));
+			case "stateWin":
+				LevelGlobals.allGoals.add(new VictoryBox(entity.x, entity.y, 256, 256));
 		}
 	}
 

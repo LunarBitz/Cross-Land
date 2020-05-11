@@ -70,9 +70,7 @@ class Enemy extends Damager
 
         if (health <= 0 && actionSystem.isAnAction([states.Idle]))
         {
-            trace("Go Die");
             actionSystem.setState(states.Dying);
-            trace(actionSystem.getState());
         }
 
         if (hitboxes != null && LevelGlobals.totalElapsed == 0)

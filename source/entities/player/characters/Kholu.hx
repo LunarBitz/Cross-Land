@@ -190,7 +190,7 @@ class Kholu extends Player
 		playerAnimation.createAnimation("mechaball_roll_wall_NE", [196,197,198,199], 20, true);
 		playerAnimation.createAnimation("mechaball_roll_wall_E", [200,201,202,203], 20, true);
 		playerAnimation.createAnimation("mechaball_roll_floor_E", [204,205,206,207], 20, true);
-		playerAnimation.createAnimation("critically_damaged", [208,209,210,211], 20, true);
+		playerAnimation.createAnimation("critically_damaged", [208,209,210,211], 5, true);
 		playerAnimation.createAnimation("climbing_sides", [212,213,214,215,214,213,212], 20, true);
 		playerAnimation.createAnimation("ledge_hanging_sides", [216], 20, false);
 		playerAnimation.createAnimation("arm_swing_midair_down", [217,218,219,220,221], 20, false);

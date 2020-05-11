@@ -12,7 +12,8 @@ enum PlayerStates
     Damaged;
     Crouching;
     Uncrouching;
-    PL;
+    victory;
+    Dead;
 }
 
 class PlayerStateLogics
@@ -35,4 +36,8 @@ class PlayerStateLogics
     public function _State_Sliding() {}
 
     public function _State_Damaged() {}
+
+    public function _State_Victory() {}
+
+    public function _State_Dead() {}
 }

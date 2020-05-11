@@ -1,5 +1,7 @@
 package systems;
 
+import flixel.ui.FlxButton;
+import flixel.util.FlxAxes;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import entities.collectables.parent.Powerup.Powerups;
 import entities.player.PlayerParent.Player;
@@ -22,6 +24,7 @@ class GameHUD extends FlxTypedGroup<FlxSprite>
     var healthBar:FlxSprite;
     public var powerupSprites:Map<String, FlxSprite>;
     var hudPowerSprites:FlxTypedGroup<FlxSprite>;
+    var replayButton:FlxButton;
 
     public function new(variableTarget:Player)
     {
@@ -32,7 +35,7 @@ class GameHUD extends FlxTypedGroup<FlxSprite>
         hudVariableTracker = variableTarget;
         scoreCounter = new FlxText(0, 2, 0, "0", 16);
         scoreCounter.setBorderStyle(SHADOW, FlxColor.GRAY, 1, 1);
-        scoreIcon = new FlxSprite(16, 16, AssetPaths.sprCoin_Icon__png);
+        scoreIcon = new FlxSprite(32, 64, AssetPaths.sprCoin_Icon__png);
         
         healthBar = new FlxSprite(65, 17);
 		healthBar.loadGraphic(AssetPaths.sprHUDHealthBarTick__png, false, 1, 7);
@@ -62,10 +65,42 @@ class GameHUD extends FlxTypedGroup<FlxSprite>
         forEach(function(sprite) sprite.scrollFactor.set(0, 0));
     }
 
+    public function drawVictory() 
+    {
+        var winText = new FlxText(0,32, 240, "Level Complete!", 32);
+        winText.setBorderStyle(SHADOW, FlxColor.GRAY, 1, 1);
+        winText.screenCenter(FlxAxes.X);
+        add(winText);
+
+        replayButton = new FlxButton(0, 0, "Replay", clickReplay);
+        replayButton.x = (FlxG.width / 2) - replayButton.width - 10;
+        replayButton.y = FlxG.height - replayButton.height - 10;
+        add(replayButton);
+
+        forEach(function(sprite) sprite.scrollFactor.set(0, 0));
+        
+    }
+
+    public function clickReplay():Void
+    {
+        trace("fffff");
+        FlxG.camera.fade(FlxColor.BLACK, 2, false, restartState);
+            
+    }
+
+    public function restartState() 
+    {
+        FlxG.resetState();
+    }
+
     override public function update(elapese:Float)
     {
         healthBar.scale.x = (hudVariableTracker.health / 100) * 90;
         scoreCounter.text = Std.string(totalScore);
+
+        if (replayButton != null)
+            if (FlxG.keys.anyJustPressed([SPACE, ENTER, C]))
+                clickReplay();
     }
 
     public function updatePowerElements() 

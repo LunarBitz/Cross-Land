@@ -411,6 +411,42 @@
       "values": [],
       "texture": "../images/sprPowerupSuperJumpBoost.png",
       "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAMFJREFUOI1jYMADeOQN//PIG/7HpwavZlvPdf9Z/+/AawgjLs2GWrUMwmniDAwMDAxbAz4zsCtUMnx5eB5DPRM+zVsDPjO8nfWSwXsDL8PPB+0MBL0Dc3bA+qNwp2MTw+sCGIA5+cvD84znrzXjtRjDBdicyiNvSDBAMaKNEJ8o19A8GjEE0DXDAC5DmPBphqUDBgYGnGmBEZ9mdoVKBgYGBgZ83sGaDpAVwdIBzCXoAKsB6H7Fl5hQvICsAZtibGoA/jCZ0mU/V2kAAAAASUVORK5CYII="
+    },
+    {
+      "exportID": "23168692",
+      "name": "stateWin",
+      "limit": -1,
+      "size": {"x": 256, "y": 256},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": []
     }
   ],
   "tilesets": [

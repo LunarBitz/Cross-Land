@@ -40,6 +40,7 @@ class Player extends FlxSprite
 	public var hitboxes:Map<String, Hitbox>;
 	public var isAttacking:Bool = false;
 	public var powerupStack:Map<String, Dynamic>;
+	public var hasWonStage:Bool = false;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
@@ -110,6 +111,11 @@ class Player extends FlxSprite
 
 	override function update(elapsed:Float) 
 	{
+		if (health <= 0 && actionSystem.isAnAction([playerLogic.states.Normal]))
+		{
+			actionSystem.setState(playerLogic.states.Dead);
+		}
+
 		if (hitboxes != null && LevelGlobals.totalElapsed == 0)
 		{
 			LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
@@ -506,7 +512,7 @@ class Player extends FlxSprite
 		var states = player.playerLogic.states;
 		if (states != null)
 		{
-			if ((player.isOnGround() && canResetState) 
+			if ((player.isOnGround() && canResetState &&!hasWonStage) 
 				&& 
 				!player.actionSystem.isAnAction([
 					states.Normal, 
@@ -562,6 +568,12 @@ class Player extends FlxSprite
 			}
 		}
 	}
+
+	public static function setVictory(player:Player, other:FlxSprite):Void
+	{
+		player.actionSystem.setState(player.playerLogic.states.Victory);
+	}
+	
 
 	
 
