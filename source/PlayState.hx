@@ -49,6 +49,7 @@ class PlayState extends FlxState
 
 	override public function create():Void
 	{
+		LevelGlobals.init();
 		LevelGlobals.currentState = this;
 		LevelGlobals.totalElapsed = 0;
 
@@ -165,11 +166,9 @@ class PlayState extends FlxState
 		// Get the solid objects for collission
 		var grid:Map<String, Array<flixel.math.FlxPoint>> = map.loadGridMap("collision");
 		
-		LevelGlobals.solidsReference = new FlxTypedGroup<Solid>();
 		for (point in grid['1'])
 			LevelGlobals.solidsReference.add(new Solid(point.x, point.y, 16, 16));
 
-		LevelGlobals.platformsReference = new FlxTypedGroup<CloudSolid>();
 		for (point in grid['P'])
 			LevelGlobals.platformsReference.add(new CloudSolid(point.x, point.y, 16, 16));
 
@@ -210,7 +209,6 @@ class PlayState extends FlxState
 		cannons = new FlxTypedGroup<Cannon>();
 		coins = new FlxTypedGroup<Coin>();
 		gems = new FlxTypedGroup<Gem>();
-		LevelGlobals.allPowerups = new FlxTypedGroup<Powerup>();
 
 		enemies = new FlxTypedGroup<Enemy>();
 		map.loadEntities(placeEntities, "entities");
