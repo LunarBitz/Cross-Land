@@ -6,7 +6,6 @@ import misc.Hitbox;
 import flixel.math.FlxPoint;
 import flixel.math.FlxAngle;
 import Debug.DebugOverlay;
-import systems.PixelSensor;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil.LineStyle;
 import flixel.animation.FlxAnimation;
@@ -77,12 +76,12 @@ class Kholu extends Player
 		#if debug
 		DebugOverlay.watchValue("Previous State", actionSystem.getPreviousState());
 		DebugOverlay.watchValue("Current State", actionSystem.getState());
-		//DebugOverlay.watchValue("Jumps", currentJumpCount);
-		//DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
+		DebugOverlay.watchValue("Jumps", currentJumpCount);
+		DebugOverlay.watchValue("Jump Buffer", Std.int(jumpBufferTimer));
 		//DebugOverlay.watchValue("On Wall", onWall);
 		//DebugOverlay.watchValue("Action Buffer", Std.int(actionSystem.delayTimer));
-		DebugOverlay.watchValue("Player Health", Std.int(health));
-		DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));		
+		//DebugOverlay.watchValue("Player Health", Std.int(health));
+		//DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));		
 		#end
 
 		alpha = (invincibilityTimer>0)? (0.35 + (0.35 * invincibilityTimer%5)): 1;

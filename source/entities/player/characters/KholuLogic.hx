@@ -45,7 +45,7 @@ class KholuStateLogics extends PlayerStateLogics
 
         // Horizontal Movement
         if (owner.playerAnimation.getCurrentAnimation() != "uncrouching")
-            owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO * 3);
+            owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED, owner.inputDirection, owner.MOVEMENT_INTERP_RATIO * 3);
 
         // Vertical Movement
         owner.scaleGravity(0.85, 0.65);
@@ -59,6 +59,7 @@ class KholuStateLogics extends PlayerStateLogics
         // Falling
         if (!owner.isOnGround())
         {
+            owner.jumpBufferTimer = 0;
             owner.actionSystem.setState(Falling, 50);
         }
             
@@ -121,7 +122,7 @@ class KholuStateLogics extends PlayerStateLogics
         owner.isAttacking = false;
 
         // Horizontal movement
-        owner.setHorizontalMovement(owner.CROUCH_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO * 4);
+        owner.setHorizontalMovement(owner.CROUCH_TARGET_SPEED, owner.inputDirection, owner.MOVEMENT_INTERP_RATIO * 4);
         // #endregion
 
         // #region Logic
@@ -147,7 +148,7 @@ class KholuStateLogics extends PlayerStateLogics
         owner.isAttacking = false;
 
         // Horizontal movement
-        owner.setHorizontalMovement(owner.UNCROUCH_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO / 2);
+        owner.setHorizontalMovement(owner.UNCROUCH_TARGET_SPEED, owner.inputDirection, owner.MOVEMENT_INTERP_RATIO / 2);
 
         // Vertical Movement
         owner.scaleGravity(0.85, 0.65);
@@ -179,7 +180,7 @@ class KholuStateLogics extends PlayerStateLogics
         owner.isAttacking = false;
 
         // Horizontal movement
-        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.inputDirection, owner.MOVEMENT_INTERP_RATIO);
 
         // Vertical Movement
         owner.scaleGravity(0.85, 0.65);
@@ -220,13 +221,16 @@ class KholuStateLogics extends PlayerStateLogics
         owner.hitboxes["tailwhip"].exists = false;
 
         // Horizontal movement
-        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED, owner.inputDirection, owner.MOVEMENT_INTERP_RATIO);
 
         // Vertical Movement
         owner.scaleGravity(0.85, 0.65);
         // #endregion
 
         // #region Logic 
+        if (owner.playerInput.isInputDown("jump_just_pressed"))
+            owner.actionSystem.setState(Jumping);
+
         if (cast(owner, Kholu).canIdleOnWall() && owner.actionSystem.getPreviousState() != Walljump_Idle)
             owner.actionSystem.setState(Walljump_Idle);
 
@@ -235,6 +239,8 @@ class KholuStateLogics extends PlayerStateLogics
             owner.actionSystem.resetTimer();
             owner.actionSystem.setState(Tailwhip_R_L);
         }
+
+        owner.jumpBufferTimer += FlxG.elapsed * 1000; // Increase buffer
         // #endregion
 
         // #region Animations
@@ -298,7 +304,7 @@ class KholuStateLogics extends PlayerStateLogics
             owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on xSpeed only
 
         // Horizontal Movement
-        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED * 1.25, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED * 1.25, owner.inputDirection, owner.MOVEMENT_INTERP_RATIO);
 
         // Vertical Movement
         owner.scaleGravity(0.85, 0.65);
@@ -331,7 +337,7 @@ class KholuStateLogics extends PlayerStateLogics
         owner.facing = FlxMath.signOf(owner.xSpeed) == -1? FlxObject.LEFT : FlxObject.RIGHT; // Change facing based on xSpeed only
 
         // Horizontal Movement
-        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED * 0.75, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(owner.IN_AIR_TARGET_SPEED * 0.75, owner.inputDirection, owner.MOVEMENT_INTERP_RATIO);
 
         // Vertical Movement
         owner.scaleGravity(0.85, 0.65);
@@ -359,7 +365,7 @@ class KholuStateLogics extends PlayerStateLogics
         owner.hitboxes["tailwhip"].exists = true;
 
         // Horizontal Movement
-        owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED * 1.1, owner.facingDirection, owner.MOVEMENT_INTERP_RATIO);
+        owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED * 1.1, owner.inputDirection, owner.MOVEMENT_INTERP_RATIO);
         //owner.setHorizontalMovement(owner.NORMAL_TARGET_SPEED * 1.1, owner.facing == FlxObject.LEFT?  -1:1, 1);
         
         // Vertical Movement

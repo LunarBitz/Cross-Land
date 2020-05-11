@@ -269,7 +269,7 @@ class PlayState extends FlxState
 			case "basicBlob":
 				enemies.add(new BasicBlob(entity.x, entity.y, 16, 16, player));
 			case "powerup_jumpboost":
-				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, JumpBoost, 5 * 1000, AssetPaths.sprPowerupJumpBoost__png));
+				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, AssetPaths.sprPowerupJumpBoost__png, JumpBoost, -1, 5, 10));
 		}
 	}
 
@@ -289,7 +289,8 @@ class PlayState extends FlxState
 			if (!player.powerupStack.exists(Std.string(object.power) + "_Value"))
 				player.powerupStack[Std.string(object.power) + "_Value"] = 1;
 			else
-				player.powerupStack[Std.string(object.power) + "_Value"] += 1;
+				if (player.powerupStack[Std.string(object.power) + "_Value"] < object.maxValue || object.maxValue == -1)
+					player.powerupStack[Std.string(object.power) + "_Value"] += 1;
 
 			if (!player.powerupStack.exists(Std.string(object.power) + "_MaxLifeTime"))
 				player.powerupStack[Std.string(object.power) + "_MaxLifeTime"] = object.maxLifeTime;
@@ -300,7 +301,7 @@ class PlayState extends FlxState
 				player.powerupStack[Std.string(object.power) + "_Timer"] += object.maxLifeTime;
 
 			trace(player.powerupStack);
-			
+			player.handlePowerups();
 			object.kill();
 		}
 	}
