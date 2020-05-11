@@ -108,7 +108,16 @@ class Kholu extends Player
 		playerInput.bindInput("attack_1", [FlxKey.X]);
 
 		playerInput.bindAxis("horizontalAxis", "left", "right");
-    }
+	}
+	
+	override private function gatherSounds():Void
+	{
+		sfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
+		sfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
+		sfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
+		sfx["swish_1"] = FlxG.sound.load(AssetPaths.sndSwish1__wav, 0.35);
+		
+	}
 	
 	/**
 		Helper to add all animations of the player

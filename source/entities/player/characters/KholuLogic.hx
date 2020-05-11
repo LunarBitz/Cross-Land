@@ -369,6 +369,8 @@ class KholuStateLogics extends PlayerStateLogics
 
         // #region Logic
         // Falling
+
+        owner.sfx["swish_1"].play();
         if (owner.playerAnimation.isAnimationFinished() && owner.playerAnimation.getCurrentAnimation() == "tail_whip_R-L")
         {
             if (owner.isOnGround())
@@ -386,6 +388,8 @@ class KholuStateLogics extends PlayerStateLogics
         {
             // To uncrouching animation if previously crouching
             owner.playerAnimation.setAnimation("tail_whip_R-L", false, false, true, 0, true);
+
+            //if (owner.playerAnimation.)
         }
         // #endregion
     }

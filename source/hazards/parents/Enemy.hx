@@ -51,13 +51,23 @@ class Enemy extends Damager
 
     override function update(elapsed:Float) 
     {
+        var states = enemyLogic.states;
+
+        if (health <= 0 && actionSystem.isAnAction([states.Idle]))
+        {
+            trace("Go Die");
+            actionSystem.setState(states.Dying);
+            trace(actionSystem.getState());
+        }
+
         if (hitboxes != null && LevelGlobals.totalElapsed == 0)
         {
+            LevelGlobals.combineMaps(LevelGlobals.allHitboxes, [hitboxes]);  
             LevelGlobals.combineMaps(LevelGlobals.allDamagers, [hitboxes]);  
             LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
         }
         
-        var states = enemyLogic.states;
+        
         actionSystem.updateTimer(elapsed, actionSystem.isAnAction([states.Detected, states.Pre_Attack, states.Damaged]) || isAttacking);
 
         for (solid in LevelGlobals.solidsReference)
@@ -155,7 +165,6 @@ class Enemy extends Damager
             {
                 if (cast(other, Hitbox).owner == hitter) { return; }
             }
-            else if (Type.getClass(other) == Enemy) { return; }
 
             if (hitter.invincibilityTimer == 0 && other.canInflictDamage)
             {
@@ -169,6 +178,17 @@ class Enemy extends Damager
                 hitter.actionSystem.setState(states.Damaged);
             }
         }
+    }
+
+    override function kill()
+    {
+        alive = false;
+        flixel.tweens.FlxTween.tween(this, {alpha: 0, y: y + 4}, 1.0, {ease: flixel.tweens.FlxEase.circOut, onComplete: finishKill});
+    }
+    
+    function finishKill(_)
+    {
+        exists = false;
     }
 
 }

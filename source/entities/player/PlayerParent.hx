@@ -110,6 +110,7 @@ class Player extends FlxSprite
 		{
 			LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
 			LevelGlobals.combineMaps(LevelGlobals.allDamagers, [hitboxes]);  
+			LevelGlobals.combineMaps(LevelGlobals.allHitboxes, [hitboxes]);  
 		}
 		
 		// Set up nicer input-handling for movement.
@@ -179,8 +180,6 @@ class Player extends FlxSprite
 	private function gatherSounds():Void
 	{
 		sfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
-		sfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
-		sfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
 	}
 
 	/**
@@ -286,7 +285,7 @@ class Player extends FlxSprite
 			if (currentJumpCount > 0)
 			{
 				sfx["jump"].play(true);
-				sfx["long_jump"].fadeIn(0.25, 0, 0.40);
+				sfx["long_jump"].fadeIn(0.25, 0, 0.35);
 				sfx["long_jump"].play(true);
 				currentJumpCount--;
 				velocity.y = JUMP_SPEED;
@@ -302,7 +301,7 @@ class Player extends FlxSprite
 		// Holding = max jump height
 		if (velocity.y < 0 && !playerInput.isInputDown("jump"))
 		{
-			sfx["long_jump"].fadeOut(0.05, 0);
+			sfx["long_jump"].fadeOut(0.1, 0);
 			if (sfx["long_jump"].volume == 0)
 				sfx["long_jump"].stop();
 			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
@@ -421,7 +420,7 @@ class Player extends FlxSprite
 				if (cast(other, Hitbox).owner == player) { return; }
 			}
 
-			if (player.invincibilityTimer == 0 && other.canInflictDamage)
+			if (player.invincibilityTimer == 0 && other.canInflictDamage && !player.isAttacking)
 			{
 				FlxG.camera.shake(0.005, 0.2);
 

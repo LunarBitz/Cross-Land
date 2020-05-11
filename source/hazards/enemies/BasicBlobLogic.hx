@@ -16,6 +16,7 @@ enum EnemyStates
     Attack_1;
     Post_Attack_1;
     Damaged;
+    Dying;
 }
 
 class BlobStateLogic extends EnemyStateLogic
@@ -41,7 +42,7 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
-        if (owner.isObjectWithinDistance(owner.target, 5, 64, true))
+        if (owner.isObjectWithinDistance(owner.target, 5, 64, false, false))
         {
             owner.actionSystem.setState(Detected);
         }
@@ -210,6 +211,29 @@ class BlobStateLogic extends EnemyStateLogic
         // #region Animations
         if (owner.actionSystem.hasChanged())
             owner.enemyAnimation.setAnimation("damaged", false, false, true, 0, true);
+        // #endregion
+    }
+
+    override public function _State_Dying() 
+    {
+        // #region Basics 
+        owner.velocity.x = 0;
+        
+        owner.isAttacking = false;
+
+        owner.hitboxes["Spinning"].exists = false;
+        // Facing Direction
+        owner.canChangeDirections = false;
+
+        // #endregion
+
+        // #region Logic 
+        if (owner.alive && owner.enemyAnimation.isOnLastFrame() && owner.enemyAnimation.isAnAnimation(["dead"]))
+            owner.kill();
+        // #endregion
+
+        // #region Animations
+        owner.enemyAnimation.setAnimation("dead", false, false, true, 0, true);
         // #endregion
     }
 

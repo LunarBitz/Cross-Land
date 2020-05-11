@@ -1,5 +1,7 @@
 package;
 
+import misc.Hitbox;
+import entities.collectables.parent.Powerup;
 import hazards.enemies.BasicBlob;
 import entities.terrain.CloudSolid;
 import Debug.DebugOverlay;
@@ -122,7 +124,7 @@ class PlayState extends FlxState
 		{
 			FlxG.overlap(player, LevelGlobals.allDamagers, Player.resolveDamagerCollision);
 			if (allAI != null)
-				FlxG.overlap(allAI, LevelGlobals.allDamagers, Enemy.resolveDamagerCollision);
+				FlxG.overlap(allAI, LevelGlobals.allHitboxes, Enemy.resolveDamagerCollision);
 		}
 
 		// Check for collectable objects
@@ -130,6 +132,14 @@ class PlayState extends FlxState
 		{
 			FlxG.overlap(player, allCollectables, resolveCollectableOverlap);
 		}
+
+		// Check for collectable objects
+		if (LevelGlobals.allPowerups != null)
+		{
+			FlxG.overlap(player, LevelGlobals.allPowerups, resolvePowerupOverlap);
+		}
+
+		
 
 	}
 
@@ -199,6 +209,7 @@ class PlayState extends FlxState
 		cannons = new FlxTypedGroup<Cannon>();
 		coins = new FlxTypedGroup<Coin>();
 		gems = new FlxTypedGroup<Gem>();
+		LevelGlobals.allPowerups = new FlxTypedGroup<Powerup>();
 
 		enemies = new FlxTypedGroup<Enemy>();
 		map.loadEntities(placeEntities, "entities");
@@ -208,6 +219,8 @@ class PlayState extends FlxState
 		// Add groups for building
 		allCollectables = new FlxTypedGroup<Collectable>();
 		LevelGlobals.allDamagers = new FlxTypedGroup<Damager>();
+		LevelGlobals.allHitboxes = new FlxTypedGroup<Hitbox>();
+		
 		allAI = new FlxTypedGroup<Enemy>();
 		LevelGlobals.combineGroups(allCollectables, [coins, gems]);
 		LevelGlobals.combineGroups(LevelGlobals.allDamagers, [enemies]);
@@ -224,6 +237,8 @@ class PlayState extends FlxState
 		add(LevelGlobals.backgroundDecor);
 		add(allCollectables);
 		add(cannons);
+		add(LevelGlobals.allPowerups);
+		
 		add(LevelGlobals.mainTiles);
 		add(LevelGlobals.mainDecor);
 		add(LevelGlobals.allDamagers);
@@ -255,6 +270,8 @@ class PlayState extends FlxState
 				gems.add(new Gem(entity.x, entity.y));
 			case "basicBlob":
 				enemies.add(new BasicBlob(entity.x, entity.y, 16, 16, player));
+			case "powerup_jumpboost":
+				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, JumpBoost, AssetPaths.sprPowerupJumpBoost__png));
 		}
 	}
 
@@ -264,6 +281,14 @@ class PlayState extends FlxState
 		{
 			hud.updateHUD(collectable.VALUE);
 			collectable.kill();
+		}
+	}
+
+	public function resolvePowerupOverlap(player:Player, object:Powerup)
+	{
+		if (player.alive && player.exists && object.alive && object.exists)
+		{
+			object.kill();
 		}
 	}
 

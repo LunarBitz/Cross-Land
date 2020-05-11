@@ -14,6 +14,7 @@ enum EnemyStates
     Attack_2;
     Attack_3;
     Damaged;
+    Dying;
 }
 
 class EnemyStateLogic
@@ -110,4 +111,8 @@ class EnemyStateLogic
     }
 
     public function _State_Damaged() {}
+
+    public function _State_Dying() {}
+
+    
 }

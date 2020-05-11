@@ -1,5 +1,7 @@
 package;
 
+import entities.collectables.parent.Powerup;
+import misc.Hitbox;
 import flixel.tile.FlxTilemap;
 import flixel.FlxSprite;
 import hazards.parents.Damager;
@@ -29,6 +31,8 @@ class LevelGlobals
     static public var foregroundDecor:FlxTilemap;
 
     public static var allDamagers:FlxTypedGroup<Damager>;
+    public static var allHitboxes:FlxTypedGroup<Hitbox>;
+    public static var allPowerups:FlxTypedGroup<Powerup>;
     
     static public var deltaTime:Float = 0;
     static public var totalElapsed:Float = 0;

@@ -76,7 +76,7 @@
       "gridSize": {"x": 16, "y": 16},
       "exportID": "01062491",
       "arrayMode": 0,
-      "legend": {"0": "#00000000", "1": "#000000ff", "P": "#ec00ffff"}
+      "legend": {"0": "#00000000", "1": "#000000ff", "P": "#ec00ffff", "J": "#fff500ff"}
     }
   ],
   "entities": [
@@ -335,6 +335,42 @@
       "values": [],
       "texture": "../Ogmo_Inventory/sprBasicBlob.png",
       "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAtCAYAAAA6GuKaAAAAAXNSR0IArs4c6QAAAlhJREFUWIXtmM9q20AQh3/b6JAHiMEYgzHkIILxMe5Nl1JE3iEv0kfooc9Q6CuEokMvOjbHJQQVAsJgXIN7bwsq6kE7m1lFsv6tctrvtPZqlW9G49lVAIfD4XA4HA6Hw+FwOArEqHff+Hnt3Pek99/2+i48iZL1w6D2kgQoAuohbz/TGz/nsovpzJjeHvbG5ySKO4vblS4Jc7g8iS+mM2wP+87io5TH08MjAOBydaW/K2eYWExnQBgU5dJS3J60yjIJV5FEsR77YWBkvIv4Gwu6mnKGnx4eXwTx8+07fPn1B0kU6/m6p1CHHemNn3vzCS5XV0ZJEFz8292dHpeD88PgdJtUjJLpqpomqduLc9xenL8Q5+uaGF7TKsvZ7ghvPqmU4VL8mraSZax2j2x3BFbVwnoeAAVZHgNo1fqsloeQqdEheCaz3RFCpgCKoIRMIWSqAxQybd2rrUpz6oSFTI2NZjGdQcgU+e+/rTeX4Tuiqmkul6+XoG6SRLEWrqOLMDBiptvw/tOHXuusSNf15ySK4c0nyNdL/R0X3R72xlxbhkmzAxKVQb5ewg8DXSrUCkmuryinf8vb+LmQKRIUbcubT5CpMVCcLRIUP7ysYnm+Xr5yn2ZbLUmROC8TCoSPSbTpcGVPWslSGZzdXOPf13sAzxsHVoUYlQUFos8W6hpjTUfatxomTFD9AoUoBUA1S6VSdb7g7XGcNxdVv1yo8cYk1DQ/2jsiO+BTNjlnN9fGMZMeu5CpMffj42e9pq9we2klXnuTmh3v5FMZ8C8EOy+2TQf3AYJV/AeiK0ExEeXU/AAAAABJRU5ErkJggg=="
+    },
+    {
+      "exportID": "15821163",
+      "name": "powerup_jumpboost",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#7fff00ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": []
     }
   ],
   "tilesets": [
