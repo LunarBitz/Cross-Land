@@ -1,5 +1,6 @@
 package hazards.enemies;
 
+import flixel.math.FlxPoint;
 import misc.Hitbox;
 import flixel.FlxObject;
 import hazards.enemies.BasicBlobLogic.BlobStateLogic;
@@ -16,6 +17,16 @@ class BasicBlob extends Enemy
 
         hitboxes = new Map<String, Hitbox>();
         createHitbox("Spinning", 36, 26); 
+
+        hudIndicatorOrigin = new FlxPoint();
+        awakeWarning = new FlxSprite(X, Y);
+        awakeWarning.loadGraphic(AssetPaths.sprCationDetected__png, true, 16, 16);
+        awakeWarning.animation.add("main", [0,1,2,3,4,5], 25, false);
+        awakeWarning.exists = false;
+        attackWarning = new FlxSprite(X, Y);
+        attackWarning.loadGraphic(AssetPaths.sprCautionWarning__png, true, 16, 16);
+        attackWarning.animation.add("main", [0,1,2,3,4,5], 25, false);
+        attackWarning.exists = false;
 
         visible = true;
         alpha = 1;

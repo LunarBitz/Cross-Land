@@ -92,6 +92,12 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
+        owner.awakeWarning.reset(owner.hudIndicatorOrigin.x, owner.hudIndicatorOrigin.y);
+        owner.awakeWarning.animation.play("main");
+        if (owner.awakeWarning.animation.curAnim != null)
+            if (owner.awakeWarning.animation.curAnim.curFrame == 5)
+                owner.awakeWarning.animation.pause();
+
         owner.actionSystem.setState(Walking, 750);
         // #endregion 
 
@@ -111,6 +117,17 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
+        flixel.tweens.FlxTween.tween(owner.awakeWarning, {alpha: 0, y: owner.awakeWarning.y - 16}, 0.5, {ease: flixel.tweens.FlxEase.circOut, onComplete: 
+            function(_)
+            {
+                owner.awakeWarning.setPosition(owner.hudIndicatorOrigin.x, owner.hudIndicatorOrigin.y);
+                owner.awakeWarning.exists = false;
+                
+                owner.awakeWarning.animation.stop();
+            }
+        });
+        
+
         if (owner.isObjectWithinDistance(owner.target, 0, 12, true))
             owner.actionSystem.setState(Pre_Attack);
         else if (!owner.isObjectWithinDistance(owner.target, 5, 135, true))
@@ -136,6 +153,13 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
+        owner.attackWarning.reset(owner.hudIndicatorOrigin.x, owner.hudIndicatorOrigin.y);
+        owner.attackWarning.alpha = 1;
+        owner.attackWarning.animation.play("main");
+        if (owner.attackWarning.animation.curAnim != null)
+            if (owner.attackWarning.animation.curAnim.curFrame == 5)
+                owner.attackWarning.animation.pause();
+
         owner.actionSystem.setState(Attack_1, 500);
         // #endregion 
 
@@ -185,6 +209,17 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion 
 
         // #region Logic
+        flixel.tweens.FlxTween.tween(owner.attackWarning, {alpha: 0, y: owner.attackWarning.y - 16}, 0.5, {ease: flixel.tweens.FlxEase.circOut, onComplete: 
+            function(_)
+            {
+                owner.attackWarning.setPosition(owner.hudIndicatorOrigin.x, owner.hudIndicatorOrigin.y);
+                owner.attackWarning.exists = false;
+                
+                owner.attackWarning.animation.stop();
+            }
+        });
+        
+
         if (!owner.isObjectWithinDistance(owner.target, 0, 12, true))
             owner.actionSystem.setState(Idle, 750);
         // #endregion 
@@ -228,6 +263,26 @@ class BlobStateLogic extends EnemyStateLogic
         // #endregion
 
         // #region Logic 
+        flixel.tweens.FlxTween.tween(owner.awakeWarning, {alpha: 0, y: owner.awakeWarning.y - 16}, 0.5, {ease: flixel.tweens.FlxEase.circOut, onComplete: 
+            function(_)
+            {
+                owner.awakeWarning.setPosition(owner.hudIndicatorOrigin.x, owner.hudIndicatorOrigin.y);
+                owner.awakeWarning.exists = false;
+                
+                owner.awakeWarning.animation.stop();
+            }
+        });
+        
+        flixel.tweens.FlxTween.tween(owner.attackWarning, {alpha: 0, y: owner.attackWarning.y - 16}, 0.5, {ease: flixel.tweens.FlxEase.circOut, onComplete: 
+            function(_)
+            {
+                owner.attackWarning.setPosition(owner.hudIndicatorOrigin.x, owner.hudIndicatorOrigin.y);
+                owner.attackWarning.exists = false;
+                
+                owner.attackWarning.animation.stop();
+            }
+        });
+
         if (owner.alive && owner.enemyAnimation.isOnLastFrame() && owner.enemyAnimation.isAnAnimation(["dead"]))
             owner.kill();
         // #endregion

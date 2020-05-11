@@ -248,12 +248,6 @@ class PlayState extends FlxState
 		add(new DebugOverlay());
 	}
 
-	function orderedAdd(group:FlxTypedGroup<Dynamic>, entities:Array<Dynamic>) 
-	{
-		for (entity in entities)
-			group.add(entity);
-	}
-
 	function placeEntities(entity:EntityData)
 	{
 		switch (entity.name)
@@ -303,11 +297,12 @@ class PlayState extends FlxState
 			var minTimer = FlxMath.minInt(player.powerupStack[Std.string(object.power) + "_Timer"], player.powerupStack[Std.string(object.power) + "_Value"] * object.maxLifeTime);
 			player.powerupStack[Std.string(object.power) + "_Timer"] = Std.int(minTimer);
 
+			player.handlePowerups();
+			object.kill();
+
 			#if debug
 			trace( 'Value: ${player.powerupStack[Std.string(object.power) + "_Value"]} - Timer: ${player.powerupStack[Std.string(object.power) + "_Timer"]} - MaxLifeTime: ${player.powerupStack[Std.string(object.power) + "_MaxLifeTime"]}\n');
 			#end
-			player.handlePowerups();
-			object.kill();
 		}
 	}
 

@@ -1,5 +1,6 @@
 package hazards.parents;
 
+import flixel.math.FlxPoint;
 import LevelGlobals;
 import misc.Hitbox;
 import flixel.FlxObject;
@@ -22,6 +23,10 @@ class Enemy extends Damager
     public var hitboxes:Map<String, Hitbox>;
     public var invincibilityTimer:Int = 0;
     public var canChangeDirections:Bool = true;
+
+    public var awakeWarning:FlxSprite;
+    public var attackWarning:FlxSprite;
+    public var hudIndicatorOrigin:FlxPoint;
     
     override public function new(?X:Float = 0, ?Y:Float = 0, ?Width:Int = 1, ?Height:Int = 1, ?initialTarget:FlxSprite) 
     {
@@ -29,6 +34,16 @@ class Enemy extends Damager
 
         hitboxes = new Map<String, Hitbox>();
         createHitbox("Attack", 8, 8, false); 
+
+        hudIndicatorOrigin = new FlxPoint();
+        awakeWarning = new FlxSprite(X, Y);
+        awakeWarning.loadGraphic(AssetPaths.sprCationDetected__png, true, 16, 16);
+        awakeWarning.animation.add("main", [0,1,2,3,4,5], 25, false);
+        awakeWarning.exists = false;
+        attackWarning = new FlxSprite(X, Y);
+        attackWarning.loadGraphic(AssetPaths.sprCautionWarning__png, true, 16, 16);
+        attackWarning.animation.add("main", [0,1,2,3,4,5], 25, false);
+        attackWarning.exists = false;
 
         acceleration.y = 981;
 		maxVelocity.y = 1500;
@@ -66,6 +81,13 @@ class Enemy extends Damager
             LevelGlobals.combineMaps(LevelGlobals.allDamagers, [hitboxes]);  
             LevelGlobals.combineMaps(LevelGlobals.currentState, [hitboxes]);
         }
+
+        if (awakeWarning != null)
+            LevelGlobals.currentState.add(awakeWarning);
+        if (attackWarning != null)
+            LevelGlobals.currentState.add(attackWarning);
+
+        
         
         
         actionSystem.updateTimer(elapsed, actionSystem.isAnAction([states.Detected, states.Pre_Attack, states.Damaged]) || isAttacking);
@@ -88,6 +110,13 @@ class Enemy extends Damager
                 hb.followOwner();
             }
         }
+
+        hudIndicatorOrigin.set(x + (width / 2) - (awakeWarning.width / 2), y - 8 - awakeWarning.height);
+
+        if (awakeWarning.exists)
+            awakeWarning.setPosition(hudIndicatorOrigin.x , hudIndicatorOrigin.y);
+        if (attackWarning.exists)
+            attackWarning.setPosition(hudIndicatorOrigin.x , hudIndicatorOrigin.y);
 
         super.update(elapsed);
 
