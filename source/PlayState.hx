@@ -1,5 +1,6 @@
 package;
 
+import flixel.math.FlxMath;
 import misc.Hitbox;
 import entities.collectables.parent.Powerup;
 import hazards.enemies.BasicBlob;
@@ -269,7 +270,7 @@ class PlayState extends FlxState
 			case "basicBlob":
 				enemies.add(new BasicBlob(entity.x, entity.y, 16, 16, player));
 			case "powerup_jumpboost":
-				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, AssetPaths.sprPowerupJumpBoost__png, JumpBoost, -1, 5, 10));
+				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, AssetPaths.sprPowerupJumpBoost__png, JumpBoost, 4, 5, 10));
 		}
 	}
 
@@ -292,15 +293,19 @@ class PlayState extends FlxState
 				if (player.powerupStack[Std.string(object.power) + "_Value"] < object.maxValue || object.maxValue == -1)
 					player.powerupStack[Std.string(object.power) + "_Value"] += 1;
 
-			if (!player.powerupStack.exists(Std.string(object.power) + "_MaxLifeTime"))
-				player.powerupStack[Std.string(object.power) + "_MaxLifeTime"] = object.maxLifeTime;
+			player.powerupStack[Std.string(object.power) + "_MaxLifeTime"] = object.maxLifeTime;
 
 			if (!player.powerupStack.exists(Std.string(object.power) + "_Timer"))
 				player.powerupStack[Std.string(object.power) + "_Timer"] = object.maxLifeTime;
 			else
 				player.powerupStack[Std.string(object.power) + "_Timer"] += object.maxLifeTime;
+			
+			var minTimer = FlxMath.minInt(player.powerupStack[Std.string(object.power) + "_Timer"], player.powerupStack[Std.string(object.power) + "_Value"] * object.maxLifeTime);
+			player.powerupStack[Std.string(object.power) + "_Timer"] = Std.int(minTimer);
 
-			trace(player.powerupStack);
+			#if debug
+			trace( 'Value: ${player.powerupStack[Std.string(object.power) + "_Value"]} - Timer: ${player.powerupStack[Std.string(object.power) + "_Timer"]} - MaxLifeTime: ${player.powerupStack[Std.string(object.power) + "_MaxLifeTime"]}\n');
+			#end
 			player.handlePowerups();
 			object.kill();
 		}

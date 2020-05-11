@@ -3,16 +3,8 @@ package entities.player;
 import flixel.system.FlxSound;
 import misc.Hitbox;
 import hazards.parents.Damager;
-import flixel.util.FlxColor;
-import flixel.FlxBasic;
-import flixel.animation.FlxAnimation;
-import haxe.CallStack.StackItem;
-import flixel.system.debug.watch.Watch;
-import flixel.system.FlxSplash;
-import haxe.macro.Expr.Case;
 import flixel.math.FlxMath;
 import flixel.FlxG;
-import systems.Hud;
 import flixel.FlxSprite;
 import flixel.FlxObject;
 import systems.ExtendedAnimation;
@@ -82,7 +74,14 @@ class Player extends FlxSprite
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
 		playerSfx = new Map<String, FlxSound>();
+
 		powerupStack = new Map<String, Int>();
+		for (pwr in Type.allEnums(Powerups))
+		{
+			powerupStack[Std.string(pwr) + "_Value"] = 0;
+			powerupStack[Std.string(pwr) + "_Timer"] = 0;
+			powerupStack[Std.string(pwr) + "_MaxLifeTime"] = 0;
+		}
 
 		gatherInputs();
 
@@ -187,6 +186,7 @@ class Player extends FlxSprite
 	{
 		playerSfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
 		playerSfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
+		playerSfx["longer_jump"] = FlxG.sound.load(AssetPaths.sndLongerJumping__wav, 0.15);
 		playerSfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
 	}
 
@@ -219,20 +219,24 @@ class Player extends FlxSprite
 					if (powerupStack[Std.string(pwr) + "_Timer"] > 0)
 					{
 						powerupStack[Std.string(pwr) + "_Timer"] -= Std.int(FlxG.elapsed * 1000);
-						
-						if (powerupStack[Std.string(pwr) + "_Timer"] < powerupStack[Std.string(pwr) + "_MaxLifeTime"] * (powerupStack[Std.string(pwr) + "_Value"] - 1))
+
+						if (powerupStack[Std.string(pwr) + "_Timer"] <= (powerupStack[Std.string(pwr) + "_MaxLifeTime"] * (powerupStack[Std.string(pwr) + "_Value"] - 1)))
 						{
-							if (powerupStack[Std.string(pwr) + "_Value"] != 0)
-							{
-								powerupStack[Std.string(pwr) + "_Value"] -= 1;
-								handlePowerups();
-							}
+							powerupStack[Std.string(pwr) + "_Value"] -= 1;
+							#if debug
+							trace('From: ${powerupStack["JumpBoost_Value"] + 1} - To: ${powerupStack["JumpBoost_Value"]}');
+							#end
+							handlePowerups();
 						}
 					}
 					else if (powerupStack[Std.string(pwr) + "_Timer"] < 0)
 						powerupStack[Std.string(pwr) + "_Timer"] = 0;
-					else if (powerupStack[Std.string(pwr) + "_Timer"] == 0)
+
+					if (powerupStack[Std.string(pwr) + "_Timer"] == 0)
+					{
 						powerupStack[Std.string(pwr) + "_Value"] = 0;
+						handlePowerups();
+					}
 				}			
 			}
 		}
@@ -240,7 +244,6 @@ class Player extends FlxSprite
 
 	public function handlePowerups() 
 	{
-		
 		JUMP_ADDER = ((JUMP_SPEED / 8) * (powerupStack.exists("JumpBoost_Value")? powerupStack["JumpBoost_Value"]:0)) + 
 					 ((JUMP_SPEED / 4) * (powerupStack.exists("SuperJumpBoost_Value")? powerupStack["SuperJumpBoost_Value"]:0)) + 
 					 ((JUMP_SPEED / 2) * (powerupStack.exists("MegaJumpBoost_Value")? powerupStack["MegaJumpBoost_Value"]:0));
@@ -311,17 +314,19 @@ class Player extends FlxSprite
 			// Follow through with jump if jump buffer is within frames
 			if (jumpBufferTimer < jumpBufferFrames)
 			{
-				
-				
-				if (powerupStack["JumpBoost_Value"] > 0)
+				playerSfx["jump"].play(true);
+				if (powerupStack != null)
 				{
-					playerSfx["jump"].play(true);
-					playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
-					playerSfx["long_jump"].play(true);
-				}
-				else
-				{
-					playerSfx["jump"].play(true);
+					if (powerupStack["SuperJumpBoost_Value"] > 0 || powerupStack["MegaJumpBoost_Value"] > 0 || powerupStack["JumpBoost_Value"] >= 3)
+					{
+						playerSfx["longer_jump"].play(true);
+						playerSfx["longer_jump"].fadeIn(0.25, 0, 0.35);
+					}
+					else if (powerupStack["JumpBoost_Value"] < 3 && powerupStack["JumpBoost_Value"] != 0)
+					{
+						playerSfx["long_jump"].play(true);
+						playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
+					}
 				}
 
 				currentJumpCount--;
@@ -340,15 +345,19 @@ class Player extends FlxSprite
 			{
 				if (currentJumpCount > 0)
 				{
-					if (powerupStack["JumpBoost_Value"] > 0)
+					playerSfx["jump"].play(true);
+					if (powerupStack != null)
 					{
-						playerSfx["jump"].play(true);
-						playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
-						playerSfx["long_jump"].play(true);
-					}
-					else
-					{
-						playerSfx["jump"].play(true);
+						if (powerupStack["SuperJumpBoost_Value"] > 0 || powerupStack["MegaJumpBoost_Value"] > 0 || powerupStack["JumpBoost_Value"] >= 3)
+						{
+							playerSfx["longer_jump"].play(true);
+							playerSfx["longer_jump"].fadeIn(0.25, 0, 0.35);
+						}
+						else if (powerupStack["JumpBoost_Value"] < 3 && powerupStack["JumpBoost_Value"] != 0)
+						{
+							playerSfx["long_jump"].play(true);
+							playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
+						}
 					}
 
 					currentJumpCount--;
@@ -374,15 +383,19 @@ class Player extends FlxSprite
 			// Only jump if the player has jumps left
 			if (currentJumpCount > 0)
 			{
-				if (powerupStack["JumpBoost_Value"] > 0)
+				playerSfx["jump"].play(true);
+				if (powerupStack != null)
 				{
-					playerSfx["jump"].play(true);
-					playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
-					playerSfx["long_jump"].play(true);
-				}
-				else
-				{
-					playerSfx["jump"].play(true);
+					if (powerupStack["SuperJumpBoost_Value"] > 0 || powerupStack["MegaJumpBoost_Value"] > 0 || powerupStack["JumpBoost_Value"] >= 3)
+					{
+						playerSfx["longer_jump"].play(true);
+						playerSfx["longer_jump"].fadeIn(0.25, 0, 0.35);
+					}
+					else if (powerupStack["JumpBoost_Value"] < 3 && powerupStack["JumpBoost_Value"] != 0)
+					{
+						playerSfx["long_jump"].play(true);
+						playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
+					}
 				}
 
 				currentJumpCount--;
@@ -399,18 +412,22 @@ class Player extends FlxSprite
 		// Holding = max jump height
 		if (velocity.y < 0 && !playerInput.isInputDown("jump"))
 		{
-			playerSfx["long_jump"].fadeOut(0.1, 0);
-
-			if (powerupStack["JumpBoost_Value"] > 0)
+			if (playerSfx["long_jump"].playing)
 			{
+				playerSfx["long_jump"].fadeOut(0.1, 0);
 				if (playerSfx["long_jump"].volume == 0)
 					playerSfx["long_jump"].stop();
-				velocity.y = Math.max(velocity.y, (JUMP_SPEED + JUMP_ADDER) / 3);
 			}
-			else
+		
+			if (playerSfx["longer_jump"].playing)
 			{
-				velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
+				playerSfx["longer_jump"].fadeOut(0.5, 0);
+				if (playerSfx["longer_jump"].volume == 0)
+					playerSfx["longer_jump"].stop();
 			}
+				
+
+			velocity.y = Math.max(velocity.y, (JUMP_SPEED + JUMP_ADDER) / 3);
 		}
 
 		jumpBufferTimer += FlxG.elapsed * 1000; // Increase buffer

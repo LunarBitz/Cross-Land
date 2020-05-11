@@ -41,7 +41,15 @@ class Kholu extends Player
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
 		playerSfx = new Map<String, FlxSound>();
+
 		powerupStack = new Map<String, Int>();
+		for (pwr in Type.allEnums(Powerups))
+		{
+			powerupStack[Std.string(pwr) + "_Value"] = 0;
+			powerupStack[Std.string(pwr) + "_Timer"] = 0;
+			powerupStack[Std.string(pwr) + "_MaxLifeTime"] = 0;
+		}
+	
 
 		gatherInputs();
 
@@ -111,6 +119,7 @@ class Kholu extends Player
 	{
 		playerSfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
 		playerSfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
+		playerSfx["longer_jump"] = FlxG.sound.load(AssetPaths.sndLongerJumping__wav, 0.15);
 		playerSfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
 		playerSfx["swish_1"] = FlxG.sound.load(AssetPaths.sndSwish1__wav, 0.35);
 		

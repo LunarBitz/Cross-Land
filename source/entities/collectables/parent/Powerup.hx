@@ -6,6 +6,7 @@ enum Powerups
 {
     JumpBoost;
     SuperJumpBoost;
+    MegaJumpBoost;
 }
 
 class Powerup extends FlxSprite
@@ -15,7 +16,7 @@ class Powerup extends FlxSprite
     public var maxLifeTime:Int = 0;
     public var maxValue:Int = 1;
 
-    public function new(?X:Float = 0, ?Y:Float = 0, ?newWidth:Int = 0, ?newHeight:Int = 0, graphicAsset:String, initialPower:Powerups, ?valueLimit:Int = 1, ?lifeTime:Int = 5, ?respawnTime:Int = 10) 
+    override public function new(?X:Float = 0, ?Y:Float = 0, ?newWidth:Int = 0, ?newHeight:Int = 0, graphicAsset:String, initialPower:Powerups, ?valueLimit:Int = 1, lifeTime:Int = 5, ?respawnTime:Int = 10) 
     {
         super(X, Y);
         
@@ -24,7 +25,7 @@ class Powerup extends FlxSprite
         power = initialPower;
         maxLifeTime = lifeTime * 1000;
         maxValue = valueLimit;
-        respawnRate = respawnTime * 1000;
+        respawnRate = respawnTime;
     }
 
     override function kill()
