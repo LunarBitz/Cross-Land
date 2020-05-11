@@ -1,5 +1,7 @@
 package entities.player.characters;
 
+import flixel.system.FlxSound;
+import entities.collectables.parent.Powerup;
 import misc.Hitbox;
 import flixel.math.FlxPoint;
 import flixel.math.FlxAngle;
@@ -27,14 +29,6 @@ import entities.player.PlayerParent;
 
 class Kholu extends Player 
 {
-
-	/**
-		Read about how inheritance based objects are inferior to composition based ones. 
-		I could switch from inheritance to composition by setting up the base class as a 
-			variable like how i've done with the logic, action system, and input system 
-			below.
-	**/
-
 	override public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(X, Y);
@@ -47,6 +41,8 @@ class Kholu extends Player
 		actionSystem = new ActionSystem(Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
+		playerSfx = new Map<String, FlxSound>();
+		powerupStack = new Map<String, Int>();
 
 		gatherInputs();
 
@@ -66,6 +62,8 @@ class Kholu extends Player
 		centerOrigin();
 
 		gatherAnimations();
+
+		gatherSounds();
 		
 		setFacingFlip(FlxObject.LEFT, true, false);
 		setFacingFlip(FlxObject.RIGHT, false, false);
@@ -84,7 +82,7 @@ class Kholu extends Player
 		//DebugOverlay.watchValue("On Wall", onWall);
 		//DebugOverlay.watchValue("Action Buffer", Std.int(actionSystem.delayTimer));
 		DebugOverlay.watchValue("Player Health", Std.int(health));
-		DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));
+		DebugOverlay.watchValue("Inv timer", Std.int(invincibilityTimer));		
 		#end
 
 		alpha = (invincibilityTimer>0)? (0.35 + (0.35 * invincibilityTimer%5)): 1;
@@ -112,10 +110,10 @@ class Kholu extends Player
 	
 	override private function gatherSounds():Void
 	{
-		sfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
-		sfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
-		sfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
-		sfx["swish_1"] = FlxG.sound.load(AssetPaths.sndSwish1__wav, 0.35);
+		playerSfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
+		playerSfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
+		playerSfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
+		playerSfx["swish_1"] = FlxG.sound.load(AssetPaths.sndSwish1__wav, 0.35);
 		
 	}
 	

@@ -21,6 +21,7 @@ import systems.Action;
 import systems.Input;
 import flixel.input.keyboard.FlxKey;
 import entities.player.PlayerLogic;
+import entities.collectables.parent.Powerup;
 import LevelGlobals;
 
 class Player extends FlxSprite 
@@ -30,7 +31,7 @@ class Player extends FlxSprite
 	public var actionSystem:ActionSystem;
 	public var playerAnimation:ExtAnimationSystem;
 	public var playerInput:InputSystem;
-	public var sfx:Map<String, FlxSound>;
+	public var playerSfx:Map<String, FlxSound>;
 
 	// Input
 	public var DEAD_ZONE(default, never):Float = 0.1;
@@ -45,6 +46,7 @@ class Player extends FlxSprite
 	public var invincibilityTimer:Int = 0;
 	public var hitboxes:Map<String, Hitbox>;
 	public var isAttacking:Bool = false;
+	public var powerupStack:Map<String, Int>;
 
 	// Movement
 	public var GRAVITY(default, never):Float = 981;
@@ -78,7 +80,8 @@ class Player extends FlxSprite
 		actionSystem = new ActionSystem(playerLogic.states.Normal);
 		playerAnimation = new ExtAnimationSystem(this);
 		playerInput = new InputSystem();
-		sfx = new Map<String, FlxSound>();
+		playerSfx = new Map<String, FlxSound>();
+		powerupStack = new Map<String, Int>();
 
 		gatherInputs();
 
@@ -121,6 +124,8 @@ class Player extends FlxSprite
 		actionSystem.updateTimer(elapsed, !isOnGround() || isAttacking);
 
 		onWall = (isTouching(FlxObject.RIGHT)? 1:0) - (isTouching(FlxObject.LEFT)? 1:0);
+
+		handlePowerupValues();
 		
 		// Update facing direction
 		updateDirection();
@@ -179,7 +184,9 @@ class Player extends FlxSprite
 
 	private function gatherSounds():Void
 	{
-		sfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
+		playerSfx["jump"] = FlxG.sound.load(AssetPaths.sndJumping__wav, 0.5);	
+		playerSfx["long_jump"] = FlxG.sound.load(AssetPaths.sndLongJumping__wav, 0.15);	
+		playerSfx["wall_jump"] = FlxG.sound.load(AssetPaths.sndWallJumping__wav, 0.65);	
 	}
 
 	/**
@@ -195,6 +202,31 @@ class Player extends FlxSprite
 			{
 				Reflect.callMethod(playerLogic, fn, []);
 			}	
+		}
+	}
+
+	private function handlePowerupValues() 
+	{
+		if (powerupStack != null)
+		{
+			for (pwr in Type.allEnums(Powerups))
+			{
+				if (powerupStack[Std.string(pwr) + "_Timer"] > 0)
+				{
+					powerupStack[Std.string(pwr) + "_Timer"] -= Std.int(FlxG.elapsed * 1000);
+					
+					if (powerupStack[Std.string(pwr) + "_Timer"] < powerupStack[Std.string(pwr) + "_MaxLifeTime"] * (powerupStack[Std.string(pwr) + "_Value"] - 1))
+						if (powerupStack[Std.string(pwr) + "_Value"] != 0)
+							powerupStack[Std.string(pwr) + "_Value"] -= 1;
+				}
+				else if (powerupStack[Std.string(pwr) + "_Timer"] < 0)
+					powerupStack[Std.string(pwr) + "_Timer"] = 0;
+				else if (powerupStack[Std.string(pwr) + "_Timer"] == 0)
+					powerupStack[Std.string(pwr) + "_Value"] = 0;
+
+				trace(powerupStack[Std.string(pwr) + "_Value"]);
+				
+			}
 		}
 	}
 
@@ -259,12 +291,26 @@ class Player extends FlxSprite
 			// Follow through with jump if jump buffer is within frames
 			if (jumpBufferTimer < jumpBufferFrames)
 			{
-				sfx["jump"].play(true);
-				sfx["long_jump"].fadeIn(0.25, 0, 0.40);
-				sfx["long_jump"].play(true);
-				currentJumpCount--;
-				velocity.y = JUMP_SPEED;
-				jumpBufferTimer = jumpBufferFrames;
+				
+				
+				if (powerupStack["JumpBoost_Value"] > 0)
+				{
+					playerSfx["jump"].play(true);
+					playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
+					playerSfx["long_jump"].play(true);
+					currentJumpCount--;
+					velocity.y = JUMP_SPEED + ((JUMP_SPEED / 8) * powerupStack["JumpBoost_Value"]);
+					jumpBufferTimer = jumpBufferFrames;
+				}
+				else
+				{
+					playerSfx["jump"].play(true);
+					currentJumpCount--;
+					velocity.y = JUMP_SPEED;
+					jumpBufferTimer = jumpBufferFrames;
+				}
+
+				
 
 				#if debug
 				trace('Jump() || Buffer Jumping - Time:${LevelGlobals.totalElapsed}');
@@ -284,11 +330,20 @@ class Player extends FlxSprite
 			// Only jump if the player has jumps left
 			if (currentJumpCount > 0)
 			{
-				sfx["jump"].play(true);
-				sfx["long_jump"].fadeIn(0.25, 0, 0.35);
-				sfx["long_jump"].play(true);
-				currentJumpCount--;
-				velocity.y = JUMP_SPEED;
+				if (powerupStack["JumpBoost_Value"] > 0)
+				{
+					playerSfx["jump"].play(true);
+					playerSfx["long_jump"].fadeIn(0.25, 0, 0.35);
+					playerSfx["long_jump"].play(true);
+					currentJumpCount--;
+					velocity.y = JUMP_SPEED + ((JUMP_SPEED / 8) * powerupStack["JumpBoost_Value"]);
+				}
+				else
+				{
+					playerSfx["jump"].play(true);
+					currentJumpCount--;
+					velocity.y = JUMP_SPEED;
+				}
 
 				#if debug
 				trace('Jump() || Pressed Jump - Time:${LevelGlobals.totalElapsed}');
@@ -301,10 +356,19 @@ class Player extends FlxSprite
 		// Holding = max jump height
 		if (velocity.y < 0 && !playerInput.isInputDown("jump"))
 		{
-			sfx["long_jump"].fadeOut(0.1, 0);
-			if (sfx["long_jump"].volume == 0)
-				sfx["long_jump"].stop();
-			velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
+			playerSfx["long_jump"].fadeOut(0.1, 0);
+			if (powerupStack["JumpBoost_Value"] > 0)
+			{
+				if (playerSfx["long_jump"].volume == 0)
+					playerSfx["long_jump"].stop();
+				velocity.y = Math.max(velocity.y, (JUMP_SPEED + ((JUMP_SPEED / 8) * powerupStack["JumpBoost_Value"])) / 3);
+			}
+			else
+			{
+				velocity.y = Math.max(velocity.y, JUMP_SPEED / 3);
+			}
+
+			
 		}
 
 		jumpBufferTimer += FlxG.elapsed * 1000; // Increase buffer

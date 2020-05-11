@@ -91,8 +91,6 @@ class PlayState extends FlxState
 	{
 		super.update(elapsed);
 
-		if (FlxG.keys.justPressed.ESCAPE)
-			lime.app.Application.current.window.close();
 		LevelGlobals.deltaTime = elapsed;
 		LevelGlobals.totalElapsed += elapsed * 1000;
 
@@ -148,7 +146,7 @@ class PlayState extends FlxState
 		Parallax.init();
 
 		Parallax.addElement("sky", AssetPaths.parSky__png, 783, 240, 0, 0, 1/64, 0, 1, false);
-		Parallax.addElement("back_cloud", AssetPaths.parCloud__png, 458, 98, 0, 19, 1/64, 1/96);
+		Parallax.addElement("back_cloud", AssetPaths.parCloud__png, 458, 98, 0, 19, 1/64, 1/512);
 		
 		Parallax.addElement("mountains", AssetPaths.parMountain2__png, 688, 256, 0, 70, 1/32, 1/92);
 		Parallax.addElement("front_cloud", AssetPaths.parCloud__png, 458, 98, 220, 54, 1/24, 1/86, 0.5);
@@ -271,7 +269,7 @@ class PlayState extends FlxState
 			case "basicBlob":
 				enemies.add(new BasicBlob(entity.x, entity.y, 16, 16, player));
 			case "powerup_jumpboost":
-				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, JumpBoost, AssetPaths.sprPowerupJumpBoost__png));
+				LevelGlobals.allPowerups.add(new Powerup(entity.x, entity.y, 16, 16, JumpBoost, 5 * 1000, AssetPaths.sprPowerupJumpBoost__png));
 		}
 	}
 
@@ -288,6 +286,21 @@ class PlayState extends FlxState
 	{
 		if (player.alive && player.exists && object.alive && object.exists)
 		{
+			if (!player.powerupStack.exists(Std.string(object.power) + "_Value"))
+				player.powerupStack[Std.string(object.power) + "_Value"] = 1;
+			else
+				player.powerupStack[Std.string(object.power) + "_Value"] += 1;
+
+			if (!player.powerupStack.exists(Std.string(object.power) + "_MaxLifeTime"))
+				player.powerupStack[Std.string(object.power) + "_MaxLifeTime"] = object.maxLifeTime;
+
+			if (!player.powerupStack.exists(Std.string(object.power) + "_Timer"))
+				player.powerupStack[Std.string(object.power) + "_Timer"] = object.maxLifeTime;
+			else
+				player.powerupStack[Std.string(object.power) + "_Timer"] += object.maxLifeTime;
+
+			trace(player.powerupStack);
+			
 			object.kill();
 		}
 	}
