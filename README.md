@@ -26,29 +26,36 @@ To build and run Cross-Land, follow the steps below:
 * All controls are keyboard-based. 
 * Use the [LEFT] and [RIGHT] arrow keys to move the the player.
 * * Hold the [UP] key and push towards a wall to slide on a wall
-* * * Press the opposite direction arrow key while still holding [UP] to wall jump
+* * * Press the arrow key opposite of the current wall while still holding [UP] to wall jump
 * Hold [DOWN] to crouch
 * Press [Z] to jump
 * * Tapping [Z] will let you jump lightly
-* * Holding the [Z] key will let you jump higher
+* * Holding the [Z] key will let you jump higher / to the max jump height
 * Press [X] to attack
 
 ## Enemies
 #### Basic Blob:
 * Starts off sleeping
-* When a player is too close, a yellow caution sign will appear above it
+* When a player is too close, a yellow caution sign will appear above it, waking it up
 * * Sleeping enemies will still inflict damage onto you
 * When awake and the player is still too close, a red caution sign will appear
 * * This means that a spin attack from it is comming
+* * * An invisible, extended hitbox will damage you by then if not the physical bounding box of the blob
 
 ## Colectables
 #### Coins & Gems
 * They only contribute to your score
 
 ## Powerups
-* Each powerup dynamically appears on the HUD in the order collected
+* Each powerup collected dynamically appears on the HUD in the order collected
 #### Jump Boosts
 * Increases your max jump height
+##### Normal Jump Boost
+* Increase by a factor or 12.5%
+##### Super Jump Boost
+* Increase by a factor or 25%
+##### Mega Jump Boost
+* Increase by a factor or 50%
 
 ## Future Developments
 This project is very rough under the hood.
