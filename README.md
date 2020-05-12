@@ -60,3 +60,17 @@ Below are listed some of the changes I'd like to make to this when I have the ti
 * Add more enemies
 * Finish HUD
 * Add lives
+
+
+## Due Credit (Copyrights/Attributions)
+This project was assembled with various CC BY 4.0 assets avaialable on [OpenGameArt](https://opengameart.org/) and [Itch.io](https://itch.io/game-assets). The following mentioned are the creators of the listed assets:
+* [Khoulu / Midi-Waffle Playable character](https://opengameart.org/content/midi-waffle)
+* * [Kelvin Shadewing](http://www.patreon.com/kelvin)
+* [Grasstop Tiles](https://opengameart.org/content/grasstop-tiles)
+* * [Kelvin Shadewing](http://www.patreon.com/kelvin)
+* * Additional tiles were created by me to accomodate for special cases
+* [Forest Lite Pixel Art Tileset](https://sanctumpixel.itch.io/forest-lite-pixel-art-tileset)
+* * [sanctumpixel](https://sanctumpixel.itch.io/)
+* * Only used the parallaxes and decor which were slightly scaled up per pixel and extended by me
+* [Slime Character](https://kvsr.itch.io/slime-character)
+* * [NYKNCK](https://kvsr.itch.io/)
