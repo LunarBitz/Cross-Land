@@ -52,15 +52,18 @@ To build and run Cross-Land, follow the steps below:
 
 ## Future Developments
 This project is very rough under the hood.
-Below are listed some of the changes I'd like to make to this when I have the time to come back to it.
+Listed below are some of the changes I'd like to make to this project when I have the more free time (and caffine for those all nighters).
 
-* Reorganize, clean up and document code
-* Extend levels
+* Reorganize / clean up and document code
+* Add a proper level complete state
+* Extend current level
+* Add more levels
 * Add checkpoints
 * Add more enemies
 * Finish HUD
 * Add lives
-
+* Dialogue
+* In-game cutscenes
 
 ## Due Credit (Copyrights/Attributions)
 This project was assembled with various CC BY 4.0 assets avaialable on [OpenGameArt](https://opengameart.org/) and [Itch.io](https://itch.io/game-assets). The following mentioned are the creators / contributors of the following assets:
