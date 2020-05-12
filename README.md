@@ -31,7 +31,7 @@ To build and run Cross-Land, follow the steps below:
 * Press [Z] to jump
 * * Tapping [Z] will let you jump lightly
 * * Holding the [Z] key will let you jump higher
-* Press [C] to attack
+* Press [X] to attack
 
 ## Enemies
 #### Basic Blob:
