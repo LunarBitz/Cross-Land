@@ -15,7 +15,7 @@ In a realm filled with friendly creatures, your on vacation hoping to relax. Lit
 
 To build and run Cross-Land, follow the steps below:
 
-1. Ensure you have [Haxe](http://www.haxe.org/download), [HaxeFlixel](http://www.haxeflixel.com), [HaxeFlixel Addons](https://haxeflixel.com/documentation/flixel-addons/) (4.2.0 +), and [OpenFL](http://www.openfl.org/download/) installed on your computer.
+1. Ensure you have [Haxe](http://www.haxe.org/download), [HaxeFlixel](http://www.haxeflixel.com), [HaxeFlixel Addons](https://haxeflixel.com/documentation/flixel-addons/) (2.8.0 +), and [OpenFL](http://www.openfl.org/download/) installed on your computer.
 2. Open a command prompt in `\Cross-Land`.
 3. Run the command `lime test html5` to build and run the executable.
 	- To run in debug mode, run the command `lime test -debug html5`. Then access the debug console with the backquote key
